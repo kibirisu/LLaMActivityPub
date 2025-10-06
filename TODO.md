@@ -1,0 +1,17 @@
+- Server
+    - API (endpoints)
+        - Server to server
+        - Client to server
+    - Database
+    - LLM
+- Webapp
+    - UI
+    - Auth
+- ActivityPub
+    - HTTP Signatures
+    - ActivtyStreams
+    - OAuth
+    - [Mastodon compliance](https://docs.joinmastodon.org/)
+        - Webfigner
+        - Microformats (???)
+        - Bearcaps
