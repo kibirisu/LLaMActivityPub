@@ -3,8 +3,8 @@
         - go
             - standard library
             - Gin
-        - python
-            - Django
+        ~- python~
+            ~- Django~
     - API (endpoints)
         - Server to server
         - Client to server
@@ -18,7 +18,7 @@
         - Market place
 - Webapp
     - Technology
-        - Python (Django)
+        ~- Python (Django)~
         - JS framework (Go)
             - React
             - Vue
