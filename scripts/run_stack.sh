@@ -11,6 +11,9 @@ start_backend() {
     BACKEND_PID=$!
     echo "Backend started with pid: $BACKEND_PID"
     popd > /dev/null
+    trap "pg_ctl -D \"$PGDATA\" stop || true;
+        kill $BACKEND_PID 2>/dev/null || true;
+        kill $FRONTEND_PID 2>/dev/null || true;" EXIT
 }
 
 start_frontend() {
@@ -22,6 +25,24 @@ start_frontend() {
     FRONTEND_PID=$!
     echo "Frontend started with pid: $FRONTEND_PID"
     popd > /dev/null
+    trap "pg_ctl -D \"$PGDATA\" stop || true;
+        kill $BACKEND_PID 2>/dev/null || true;
+        kill $FRONTEND_PID 2>/dev/null || true;" EXIT
+}
+
+start_postgres() {
+    PGDATA=$PWD/.pgdata
+    PGSOCKET_DIR="$PWD/.pgsocket"
+    mkdir -p $PGSOCKET_DIR
+    PGPORT=5432
+    if [ ! -d "$PGDATA" ]; then
+      initdb -D "$PGDATA"
+    fi
+    pg_ctl -D "$PGDATA" -o "-p $PGPORT -k $PGSOCKET_DIR" -l $LOG_DIR/postgresql.log start
+    echo "PostgreSQL started on port $PGPORT"
+    trap "pg_ctl -D \"$PGDATA\" stop || true;
+        kill $BACKEND_PID 2>/dev/null || true;
+        kill $FRONTEND_PID 2>/dev/null || true;" EXIT
 }
 
 if [ -z "$BACKEND_LOGS" ]; then
@@ -32,6 +53,7 @@ if [ -z "$FRONTEND_LOGS" ]; then
     FRONTEND_LOGS="$LOG_DIR/frontend.log"
 fi
 
+start_postgres
 start_backend
 start_frontend
 
@@ -61,5 +83,3 @@ while true; do
 done
 echo
 
-kill $BACKEND_PID 2>/dev/null
-kill $FRONTEND_PID 2>/dev/null
