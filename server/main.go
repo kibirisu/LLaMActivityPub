@@ -1,38 +1,30 @@
 package main
 
 import (
-	"database/sql"
+	"context"
 	"encoding/json"
 	"fmt"
+	db "llamap/server/db/sqlc"
 	"log"
 	"net/http"
-	"os"
-	_ "github.com/jackc/pgx/v5/stdlib" // PostgreSQL driver for database/sql
+
+	"github.com/jackc/pgx/v5"
 )
 
-var db *sql.DB
+var (
+	queries *db.Queries
+	ctx     context.Context
+)
 
 func main() {
-	// Read the database connection string
-	dsn := os.Getenv("DATABASE_URL")
-	if dsn == "" {
-		// Fallback for local dev (adjust credentials as needed)
-		dsn = "postgres://dev:password@localhost:5432/devdb?sslmode=disable"
-	}
-
-	// Connect to PostgreSQL
-	var err error
-	db, err = sql.Open("pgx", dsn)
+	ctx = context.Background()
+	conn, err := pgx.Connect(ctx, "postgres://llamap:changeme@localhost:5432/dev")
 	if err != nil {
-		log.Fatalf("❌ Failed to open DB: %v", err)
+		log.Fatal(err)
 	}
-	defer db.Close()
+	defer conn.Close(ctx)
 
-	// Verify connection
-	if err := db.Ping(); err != nil {
-		log.Fatalf("❌ Failed to connect to PostgreSQL: %v", err)
-	}
-	log.Println("✅ Connected to PostgreSQL")
+	queries = db.New(conn)
 
 	// Define routes
 	http.HandleFunc("/ping", pingHandler)
@@ -53,37 +45,28 @@ func pingHandler(w http.ResponseWriter, r *http.Request) {
 
 // usersHandler — fetch some users from the DB
 func usersHandler(w http.ResponseWriter, r *http.Request) {
-	rows, err := db.Query("SELECT id, name FROM users LIMIT 10")
+	res, err := queries.GetUsers(ctx)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("DB error: %v", err), http.StatusInternalServerError)
 		return
 	}
-	defer rows.Close()
-
-	type User struct {
-		ID   int    `json:"id"`
+	type user struct {
+		ID   int32  `json:"id"`
 		Name string `json:"name"`
 	}
-
-	var users []User
-	for rows.Next() {
-		var u User
-		if err := rows.Scan(&u.ID, &u.Name); err != nil {
-			http.Error(w, fmt.Sprintf("Row error: %v", err), http.StatusInternalServerError)
-			return
-		}
-		users = append(users, u)
+	var users []user
+	for _, v := range res {
+		user := user{v.ID, v.Name}
+		users = append(users, user)
 	}
-
-	 writeJSON(w, http.StatusOK, map[string]interface{}{"users": users})
+	writeJSON(w, http.StatusOK, map[string]any{"users": users})
 }
 
 // Helper to write JSON responses
-func writeJSON(w http.ResponseWriter, status int, data interface{}) {
+func writeJSON(w http.ResponseWriter, status int, data any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	if err := json.NewEncoder(w).Encode(data); err != nil {
 		log.Printf("Failed to write JSON: %v", err)
 	}
 }
-
