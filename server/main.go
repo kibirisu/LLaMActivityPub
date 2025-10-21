@@ -56,8 +56,9 @@ func main() {
 	}
 
 	// Define routes
-	http.HandleFunc("/ping", pingHandler)
-	http.HandleFunc("/users", usersHandler)
+	http.Handle("/", http.FileServer(http.Dir("../web/dist")))
+	http.HandleFunc("/api/ping", pingHandler)
+	http.HandleFunc("/api/users", usersHandler)
 
 	// Start the HTTP server
 	addr := ":8080"
