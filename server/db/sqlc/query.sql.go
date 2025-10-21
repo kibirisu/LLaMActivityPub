@@ -19,7 +19,7 @@ type GetUsersRow struct {
 }
 
 func (q *Queries) GetUsers(ctx context.Context) ([]GetUsersRow, error) {
-	rows, err := q.db.Query(ctx, getUsers)
+	rows, err := q.db.QueryContext(ctx, getUsers)
 	if err != nil {
 		return nil, err
 	}
@@ -31,6 +31,9 @@ func (q *Queries) GetUsers(ctx context.Context) ([]GetUsersRow, error) {
 			return nil, err
 		}
 		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

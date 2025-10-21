@@ -2,29 +2,58 @@ package main
 
 import (
 	"context"
+	"database/sql"
+	"embed"
 	"encoding/json"
 	"fmt"
 	db "llamap/server/db/sqlc"
 	"log"
 	"net/http"
+	"os"
 
-	"github.com/jackc/pgx/v5"
+	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/pressly/goose/v3"
 )
 
 var (
-	queries *db.Queries
-	ctx     context.Context
+	//go:embed db/migrations/*.sql
+	embedMigrations embed.FS
+	queries         *db.Queries
+	ctx             context.Context
 )
 
 func main() {
-	ctx = context.Background()
-	conn, err := pgx.Connect(ctx, "postgres://llamap:changeme@localhost:5432/dev")
+	// Read the database connection string
+	dsn := os.Getenv("DATABASE_URL")
+	if dsn == "" {
+		// Fallback for local dev (adjust credentials as needed)
+		dsn = "postgres://dev:password@localhost:5432/devdb?sslmode=disable"
+	}
+
+	// Connect to PostgreSQL
+	var err error
+	pool, err := sql.Open("pgx", dsn)
 	if err != nil {
+		log.Fatalf("❌ Failed to open DB: %v", err)
+	}
+	defer pool.Close()
+
+	// Verify connection
+	if err := pool.Ping(); err != nil {
+		log.Fatalf("❌ Failed to connect to PostgreSQL: %v", err)
+	}
+	log.Println("✅ Connected to PostgreSQL")
+
+	ctx = context.Background()
+	goose.SetBaseFS(embedMigrations)
+
+	if err := goose.SetDialect("postgres"); err != nil {
 		log.Fatal(err)
 	}
-	defer conn.Close(ctx)
 
-	queries = db.New(conn)
+	if err := goose.Up(pool, "db/migrations"); err != nil {
+		log.Fatal(err)
+	}
 
 	// Define routes
 	http.HandleFunc("/ping", pingHandler)
