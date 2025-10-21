@@ -6,7 +6,7 @@
 Thumbs.db  # Windows specific files
 
 # Go-specific ignores
-bin/  # Binary outputs
+bin/
 go.work  # Go workspace file
 *.exe  # Executable files
 *.dll  # Dynamic link libraries
@@ -15,14 +15,6 @@ go.work  # Go workspace file
 # Test binary files
 test_bin/
 _test/
-
-# React-specific ignores
-node_modules/  # Node.js modules directory
-package-lock.json  # npm package lock file
-yarn.lock  # Yarn dependency resolution file
-.DS_Store  # macOS specific files in node_modules (redundant, but included for safety)
-.cache  # Cache directory
-**/*.sass-cache  # Sass cache directories
 
 # PostgreSQL-specific ignores
 .pgdata/
