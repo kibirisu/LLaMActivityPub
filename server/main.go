@@ -25,9 +25,13 @@ var (
 func main() {
 	// Read the database connection string
 	dsn := os.Getenv("DATABASE_URL")
+	env := os.Getenv("APP_ENV")
 	if dsn == "" {
 		// Fallback for local dev (adjust credentials as needed)
 		dsn = "postgres://dev:password@localhost:5432/devdb?sslmode=disable"
+	}
+	if env == "" {
+		env = "dev"
 	}
 
 	// Connect to PostgreSQL
@@ -56,7 +60,9 @@ func main() {
 	}
 
 	// Define routes
-	http.Handle("/", http.FileServer(http.Dir("../web/dist")))
+	if env == "dev" {
+		http.Handle("/", http.FileServer(http.Dir("../web/dist")))
+	}
 	http.HandleFunc("/api/ping", pingHandler)
 	http.HandleFunc("/api/users", usersHandler)
 
