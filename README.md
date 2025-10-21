@@ -7,6 +7,7 @@ List of dependancies needed to install to be able to run the stack:
 * postgresql
 * pnpm
 * golang
+* sqlc
 
 ### Running:
 To run the full stack simply:

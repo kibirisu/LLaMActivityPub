@@ -14,8 +14,8 @@ SELECT id, name FROM users LIMIT 10
 `
 
 type GetUsersRow struct {
-	ID   int32
-	Name string
+	ID   int32  `json:"id"`
+	Name string `json:"name"`
 }
 
 func (q *Queries) GetUsers(ctx context.Context) ([]GetUsersRow, error) {

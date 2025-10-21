@@ -50,16 +50,7 @@ func usersHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("DB error: %v", err), http.StatusInternalServerError)
 		return
 	}
-	type user struct {
-		ID   int32  `json:"id"`
-		Name string `json:"name"`
-	}
-	var users []user
-	for _, v := range res {
-		user := user{v.ID, v.Name}
-		users = append(users, user)
-	}
-	writeJSON(w, http.StatusOK, map[string]any{"users": users})
+	writeJSON(w, http.StatusOK, map[string]any{"users": res})
 }
 
 // Helper to write JSON responses
