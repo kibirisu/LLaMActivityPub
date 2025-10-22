@@ -15,6 +15,7 @@ services:
     container_name: app
     environment:
       - DATABASE_URL
+      - APP_ENV
     depends_on:
       - db
     ports:

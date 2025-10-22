@@ -1,5 +1,4 @@
 APP_NAME := llamap
-BACKEND_DIR := server
 FRONTEND_DIR := web
 DIST_DIR := $(FRONTEND_DIR)/dist
 BIN_DIR := $(PWD)/bin
@@ -38,7 +37,7 @@ build: build-backend build-frontend
 
 .PHONY: build-backend
 build-backend:
-	cd $(BACKEND_DIR) && $(GO_BUILD_CMD)
+	$(GO_BUILD_CMD)
 
 .PHONY: build-frontend
 build-frontend: $(NODE_MODULES)
@@ -51,7 +50,7 @@ dev:
 .PHONY: dev-backend
 dev-backend: tools
 	@echo Starting dev server...
-	@cd $(BACKEND_DIR) && air --build.cmd "$(GO_BUILD_CMD)" --build.bin "$(BIN_DIR)/$(APP_NAME)"
+	@air --build.cmd "$(GO_BUILD_CMD)" --build.bin "$(BIN_DIR)/$(APP_NAME)"
 
 .PHONY: dev-frontend
 dev-frontend: $(NODE_MODULES)
@@ -69,7 +68,7 @@ run-dev-db:
 .PHONY: gen-sql
 gen-sql: tools
 	@echo Generating sqlc types...
-	@cd $(BACKEND_DIR)/db && sqlc generate
+	@cd db && sqlc generate
 
 .PHONY: clean
 clean:

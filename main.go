@@ -6,10 +6,11 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
-	db "llamap/server/db/sqlc"
 	"log"
 	"net/http"
 	"os"
+
+	db "llamap/db/sqlc"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
@@ -62,7 +63,7 @@ func main() {
 
 	// Define routes
 	if env == "prod" {
-		http.Handle("/{$}", http.FileServer(http.Dir("web/dist")))
+		http.Handle("/", http.FileServer(http.Dir("web/dist")))
 	}
 	http.HandleFunc("/api/ping", pingHandler)
 	http.HandleFunc("/api/users", usersHandler)

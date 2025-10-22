@@ -1,4 +1,4 @@
-module llamap/server
+module llamap
 
 go 1.25.3
 
