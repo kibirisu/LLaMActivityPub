@@ -50,7 +50,7 @@ dev:
 .PHONY: dev-backend
 dev-backend: tools
 	@echo Starting dev server...
-	@air --build.cmd "$(GO_BUILD_CMD)" --build.bin "$(BIN_DIR)/$(APP_NAME)"
+	@air -build.cmd "$(GO_BUILD_CMD)" -build.bin "$(BIN_DIR)/$(APP_NAME)" -build.exclude_dir "bin,web" -build.post_cmd "rmdir tmp"
 
 .PHONY: dev-frontend
 dev-frontend: $(NODE_MODULES)

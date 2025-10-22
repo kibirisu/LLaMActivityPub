@@ -6,6 +6,7 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -17,6 +18,8 @@ import (
 )
 
 var (
+	//go:embed web/dist
+	assets embed.FS
 	//go:embed db/migrations/*.sql
 	migrations embed.FS
 	queries    *db.Queries
@@ -61,17 +64,23 @@ func main() {
 		log.Fatal(err)
 	}
 
+	mux := http.NewServeMux()
+
 	// Define routes
 	if env == "prod" {
-		http.Handle("/", http.FileServer(http.Dir("web/dist")))
+		fs, err := fs.Sub(assets, "web/dist")
+		if err != nil {
+			log.Fatal(err)
+		}
+		mux.Handle("/", http.FileServer(http.FS(fs)))
 	}
-	http.HandleFunc("/api/ping", pingHandler)
-	http.HandleFunc("/api/users", usersHandler)
+	mux.HandleFunc("/api/ping", pingHandler)
+	mux.HandleFunc("/api/users", usersHandler)
 
 	// Start the HTTP server
 	addr := ":8080"
 	log.Printf("🚀 Server running at http://localhost%s\n", addr)
-	if err := http.ListenAndServe(addr, nil); err != nil {
+	if err := http.ListenAndServe(addr, mux); err != nil {
 		log.Fatalf("❌ Server failed: %v", err)
 	}
 }
