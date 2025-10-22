@@ -2,11 +2,12 @@
 
 https://socialhub.activitypub.rocks/pub/guide-for-new-activitypub-implementers
 
-### Dependancies
+### Dependencies
 List of dependancies needed to install to be able to run the stack:
 * postgresql
 * pnpm
 * golang
+* make
 * sqlc
 
 ### Running:
@@ -35,7 +36,6 @@ CREATE TABLE users (
     email TEXT UNIQUE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-CREATE TABLE
 INSERT INTO users (name, email) VALUES
     ('Alice', 'alice@example.com'),
     ('Bob', 'bob@example.com');

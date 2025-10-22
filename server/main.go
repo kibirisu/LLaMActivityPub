@@ -17,9 +17,9 @@ import (
 
 var (
 	//go:embed db/migrations/*.sql
-	embedMigrations embed.FS
-	queries         *db.Queries
-	ctx             context.Context
+	migrations embed.FS
+	queries    *db.Queries
+	ctx        context.Context
 )
 
 func main() {
@@ -35,7 +35,6 @@ func main() {
 	}
 
 	// Connect to PostgreSQL
-	var err error
 	pool, err := sql.Open("pgx", dsn)
 	if err != nil {
 		log.Fatalf("❌ Failed to open DB: %v", err)
@@ -49,7 +48,9 @@ func main() {
 	log.Println("✅ Connected to PostgreSQL")
 
 	ctx = context.Background()
-	goose.SetBaseFS(embedMigrations)
+
+	// Run database migrations
+	goose.SetBaseFS(migrations)
 
 	if err := goose.SetDialect("postgres"); err != nil {
 		log.Fatal(err)
@@ -60,8 +61,8 @@ func main() {
 	}
 
 	// Define routes
-	if env == "dev" {
-		http.Handle("/", http.FileServer(http.Dir("../web/dist")))
+	if env == "prod" {
+		http.Handle("/{$}", http.FileServer(http.Dir("web/dist")))
 	}
 	http.HandleFunc("/api/ping", pingHandler)
 	http.HandleFunc("/api/users", usersHandler)
