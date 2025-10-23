@@ -72,7 +72,7 @@ func main() {
 
 	// Define routes
 	if env == "prod" {
-		mux.HandleFunc("/", appHandler)
+		mux.HandleFunc("/", handleApp)
 	}
 
 	// Start the HTTP server
@@ -92,7 +92,7 @@ func getAssets() error {
 	return nil
 }
 
-func appHandler(w http.ResponseWriter, r *http.Request) {
+func handleApp(w http.ResponseWriter, r *http.Request) {
 	file := strings.TrimPrefix(r.URL.Path, "/")
 	info, err := fs.Stat(assets, file)
 	if err != nil {

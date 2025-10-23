@@ -15,7 +15,7 @@ COPY go.mod go.sum .
 RUN go mod download
 
 COPY . .
-COPY --from=frontend /app/dist /web/dist
+COPY --from=frontend /app/dist ./web/dist
 
 RUN go build -v -o /usr/local/bin/app main.go
 
