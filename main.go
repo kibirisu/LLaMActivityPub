@@ -4,20 +4,24 @@ import (
 	"context"
 	"database/sql"
 	"embed"
-	"encoding/json"
-	"fmt"
-	db "llamap/server/db/sqlc"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
+	"strings"
+
+	db "llamap/db/sqlc"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
 )
 
 var (
+	//go:embed web/dist
+	appDist embed.FS
 	//go:embed db/migrations/*.sql
 	migrations embed.FS
+	assets     fs.FS
 	queries    *db.Queries
 	ctx        context.Context
 )
@@ -60,41 +64,42 @@ func main() {
 		log.Fatal(err)
 	}
 
+	if err := getAssets(); err != nil {
+		log.Fatal(err)
+	}
+
+	mux := http.NewServeMux()
+
 	// Define routes
 	if env == "prod" {
-		http.Handle("/{$}", http.FileServer(http.Dir("web/dist")))
+		mux.HandleFunc("/", handleApp)
 	}
-	http.HandleFunc("/api/ping", pingHandler)
-	http.HandleFunc("/api/users", usersHandler)
 
 	// Start the HTTP server
 	addr := ":8080"
 	log.Printf("🚀 Server running at http://localhost%s\n", addr)
-	if err := http.ListenAndServe(addr, nil); err != nil {
+	if err := http.ListenAndServe(addr, mux); err != nil {
 		log.Fatalf("❌ Server failed: %v", err)
 	}
 }
 
-// pingHandler — simple health check endpoint
-func pingHandler(w http.ResponseWriter, r *http.Request) {
-	writeJSON(w, http.StatusOK, map[string]string{"message": "pong"})
-}
-
-// usersHandler — fetch some users from the DB
-func usersHandler(w http.ResponseWriter, r *http.Request) {
-	res, err := queries.GetUsers(ctx)
+func getAssets() error {
+	var err error
+	assets, err = fs.Sub(appDist, "web/dist")
 	if err != nil {
-		http.Error(w, fmt.Sprintf("DB error: %v", err), http.StatusInternalServerError)
-		return
+		return err
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"users": res})
+	return nil
 }
 
-// Helper to write JSON responses
-func writeJSON(w http.ResponseWriter, status int, data any) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	if err := json.NewEncoder(w).Encode(data); err != nil {
-		log.Printf("Failed to write JSON: %v", err)
+func handleApp(w http.ResponseWriter, r *http.Request) {
+	file := strings.TrimPrefix(r.URL.Path, "/")
+	info, err := fs.Stat(assets, file)
+	if err != nil {
+		log.Println(err)
+		file = "index.html"
+	} else if !info.Mode().IsRegular() {
+		file = "index.html"
 	}
+	http.ServeFileFS(w, r, assets, file)
 }

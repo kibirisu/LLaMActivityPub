@@ -1,0 +1,11 @@
+.git
+.gitignore
+scripts
+web/node_modules
+web/dist
+bin
+Makefile
+compose.yml
+Dockerfile
+README.md
+TODO.md
