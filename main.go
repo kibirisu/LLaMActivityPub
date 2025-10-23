@@ -4,12 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"embed"
-	"encoding/json"
-	"fmt"
 	"io/fs"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	db "llamap/db/sqlc"
 
@@ -19,9 +18,10 @@ import (
 
 var (
 	//go:embed web/dist
-	assets embed.FS
+	appDist embed.FS
 	//go:embed db/migrations/*.sql
 	migrations embed.FS
+	assets     fs.FS
 	queries    *db.Queries
 	ctx        context.Context
 )
@@ -64,18 +64,16 @@ func main() {
 		log.Fatal(err)
 	}
 
+	if err := getAssets(); err != nil {
+		log.Fatal(err)
+	}
+
 	mux := http.NewServeMux()
 
 	// Define routes
 	if env == "prod" {
-		fs, err := fs.Sub(assets, "web/dist")
-		if err != nil {
-			log.Fatal(err)
-		}
-		mux.Handle("/", http.FileServer(http.FS(fs)))
+		mux.HandleFunc("/", appHandler)
 	}
-	mux.HandleFunc("/api/ping", pingHandler)
-	mux.HandleFunc("/api/users", usersHandler)
 
 	// Start the HTTP server
 	addr := ":8080"
@@ -85,26 +83,23 @@ func main() {
 	}
 }
 
-// pingHandler — simple health check endpoint
-func pingHandler(w http.ResponseWriter, r *http.Request) {
-	writeJSON(w, http.StatusOK, map[string]string{"message": "pong"})
-}
-
-// usersHandler — fetch some users from the DB
-func usersHandler(w http.ResponseWriter, r *http.Request) {
-	res, err := queries.GetUsers(ctx)
+func getAssets() error {
+	var err error
+	assets, err = fs.Sub(appDist, "web/dist")
 	if err != nil {
-		http.Error(w, fmt.Sprintf("DB error: %v", err), http.StatusInternalServerError)
-		return
+		return err
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"users": res})
+	return nil
 }
 
-// Helper to write JSON responses
-func writeJSON(w http.ResponseWriter, status int, data any) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
-	if err := json.NewEncoder(w).Encode(data); err != nil {
-		log.Printf("Failed to write JSON: %v", err)
+func appHandler(w http.ResponseWriter, r *http.Request) {
+	file := strings.TrimPrefix(r.URL.Path, "/")
+	info, err := fs.Stat(assets, file)
+	if err != nil {
+		log.Println(err)
+		file = "index.html"
+	} else if !info.Mode().IsRegular() {
+		file = "index.html"
 	}
+	http.ServeFileFS(w, r, assets, file)
 }
