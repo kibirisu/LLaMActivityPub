@@ -3,18 +3,18 @@
 //   sqlc v1.30.0
 // source: query.sql
 
-package db
+package sqlite
 
 import (
 	"context"
 )
 
 const getUsers = `-- name: GetUsers :many
-SELECT id, name FROM users LIMIT 10
+SELECT id, name FROM users
 `
 
 type GetUsersRow struct {
-	ID   int32  `json:"id"`
+	ID   int64  `json:"id"`
 	Name string `json:"name"`
 }
 

@@ -29,7 +29,7 @@ $(NODE_MODULES): $(LOCKFILE) $(PACKAGE_JSON)
 	cd $(FRONTEND_DIR) && pnpm install --frozen-lockfile
 
 .PHONY: run
-run: build 
+run: build-backend 
 	$(BIN_DIR)/$(APP_NAME)
 
 .PHONY: build
@@ -67,8 +67,8 @@ run-dev-db:
 
 .PHONY: gen-sql
 gen-sql: tools
-	@echo Generating sqlc types...
-	@cd db && sqlc generate
+	@echo Generating sqlc modules...
+	@sqlc generate -f .sqlc.yaml
 
 .PHONY: clean
 clean:

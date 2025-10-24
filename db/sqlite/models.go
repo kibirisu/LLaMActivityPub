@@ -2,14 +2,14 @@
 // versions:
 //   sqlc v1.30.0
 
-package db
+package sqlite
 
 import (
 	"database/sql"
 )
 
 type User struct {
-	ID        int32        `json:"id"`
+	ID        int64        `json:"id"`
 	Name      string       `json:"name"`
 	Email     string       `json:"email"`
 	CreatedAt sql.NullTime `json:"created_at"`

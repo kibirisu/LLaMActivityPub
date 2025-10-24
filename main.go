@@ -10,8 +10,6 @@ import (
 	"os"
 	"strings"
 
-	db "llamap/db/sqlc"
-
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
 )
@@ -19,10 +17,9 @@ import (
 var (
 	//go:embed web/dist
 	appDist embed.FS
-	//go:embed db/migrations/*.sql
+	//go:embed db/migrations/*/*.sql
 	migrations embed.FS
 	assets     fs.FS
-	queries    *db.Queries
 	ctx        context.Context
 )
 
@@ -60,7 +57,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	if err := goose.Up(pool, "db/migrations"); err != nil {
+	if err := goose.Up(pool, "db/migrations/postgres"); err != nil {
 		log.Fatal(err)
 	}
 
