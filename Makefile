@@ -3,7 +3,7 @@ FRONTEND_DIR := web
 DIST_DIR := $(FRONTEND_DIR)/dist
 BIN_DIR := $(PWD)/bin
 TOOLS := air sqlc
-GO_BUILD_CMD := go build -o $(BIN_DIR)/$(APP_NAME) cmd/main.go
+GO_BUILD_CMD := go build -o $(BIN_DIR)/$(APP_NAME) ./cmd/$(APP_NAME)
 
 NODE_MODULES := $(FRONTEND_DIR)/node_modules
 LOCKFILE := $(FRONTEND_DIR)/pnpm-lock.yaml

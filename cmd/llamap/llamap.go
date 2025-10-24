@@ -6,10 +6,10 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 
-	"llamap/db"
+	"llamap/pkg/config"
+	"llamap/pkg/db"
 	"llamap/web"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -22,19 +22,10 @@ var (
 )
 
 func main() {
-	// Read the database connection string
-	dsn := os.Getenv("DATABASE_URL")
-	env := os.Getenv("APP_ENV")
-	if dsn == "" {
-		// Fallback for local dev (adjust credentials as needed)
-		dsn = "postgres://dev:password@localhost:5432/devdb?sslmode=disable"
-	}
-	if env == "" {
-		env = "dev"
-	}
+	conf := config.GetConfig()
 
 	// Connect to PostgreSQL
-	pool, err := sql.Open("pgx", dsn)
+	pool, err := sql.Open("pgx", conf.DatabaseUrl)
 	if err != nil {
 		log.Fatalf("❌ Failed to open DB: %v", err)
 	}
@@ -71,7 +62,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	// Define routes
-	if env == "prod" {
+	if conf.AppEnv == "prod" {
 		mux.HandleFunc("/", handleApp)
 	}
 
@@ -83,6 +74,7 @@ func main() {
 	}
 }
 
+// Can be done more effectively
 func handleApp(w http.ResponseWriter, r *http.Request) {
 	file := strings.TrimPrefix(r.URL.Path, "/")
 	info, err := fs.Stat(assets, file)
