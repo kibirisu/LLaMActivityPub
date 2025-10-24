@@ -3,24 +3,22 @@ package main
 import (
 	"context"
 	"database/sql"
-	"embed"
 	"io/fs"
 	"log"
 	"net/http"
 	"os"
 	"strings"
 
+	"llamap/db"
+	"llamap/web"
+
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
 )
 
 var (
-	//go:embed web/dist
-	appDist embed.FS
-	//go:embed db/migrations/*/*.sql
-	migrations embed.FS
-	assets     fs.FS
-	ctx        context.Context
+	assets fs.FS
+	ctx    context.Context
 )
 
 func main() {
@@ -51,17 +49,22 @@ func main() {
 	ctx = context.Background()
 
 	// Run database migrations
+	migrations, err := db.GetMigrations()
+	if err != nil {
+		log.Fatal(err)
+	}
 	goose.SetBaseFS(migrations)
 
 	if err := goose.SetDialect("postgres"); err != nil {
 		log.Fatal(err)
 	}
 
-	if err := goose.Up(pool, "db/migrations/postgres"); err != nil {
+	if err := goose.Up(pool, "postgres"); err != nil {
 		log.Fatal(err)
 	}
 
-	if err := getAssets(); err != nil {
+	assets, err = web.GetAssets()
+	if err != nil {
 		log.Fatal(err)
 	}
 
@@ -78,15 +81,6 @@ func main() {
 	if err := http.ListenAndServe(addr, mux); err != nil {
 		log.Fatalf("❌ Server failed: %v", err)
 	}
-}
-
-func getAssets() error {
-	var err error
-	assets, err = fs.Sub(appDist, "web/dist")
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func handleApp(w http.ResponseWriter, r *http.Request) {
