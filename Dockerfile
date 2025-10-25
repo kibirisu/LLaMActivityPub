@@ -1,4 +1,4 @@
-FROM node:lts AS frontend
+FROM node:lts-alpine AS frontend
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 ENV CI="true"
@@ -9,7 +9,7 @@ WORKDIR /app
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 RUN pnpm build
 
-FROM golang:1.25.3 AS backend
+FROM golang:1.25.3-alpine AS backend
 WORKDIR /usr/src/app
 COPY go.mod go.sum .
 RUN go mod download
@@ -17,7 +17,10 @@ RUN go mod download
 COPY . .
 COPY --from=frontend /app/dist ./web/dist
 
-RUN go build -v -o /usr/local/bin/app main.go
+RUN go build -v -o /go/bin/app ./cmd/llamap
 
-EXPOSE 8000
-CMD [ "app" ]
+FROM gcr.io/distroless/static-debian12
+COPY --from=backend /go/bin/app /
+
+EXPOSE 8080
+CMD [ "/app" ]
