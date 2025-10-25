@@ -5,7 +5,6 @@ import (
 	"io/fs"
 )
 
-//go:embed dist
 var assets embed.FS
 
 func GetAssets() (res fs.FS, err error) {
