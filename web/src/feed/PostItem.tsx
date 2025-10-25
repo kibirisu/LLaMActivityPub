@@ -1,7 +1,8 @@
-import React from "react";
-import { Post } from "./feedData";
+import React, { useState, useEffect } from "react";
 import { Heart, Repeat, MessageCircle, Share2 } from "lucide-react";
+import { Post } from "./feedData";
 import { timeAgo, initials } from "./utils";
+import ReactMarkdown from 'react-markdown'
 
 
 type Props = {
@@ -10,6 +11,7 @@ type Props = {
 
 
 export default function PostItem({ post }: Props) {
+
   return (
     <div className="border-b border-gray-200 p-4 hover:bg-gray-50 transition-colors">
       <div className="flex space-x-3">
@@ -22,7 +24,10 @@ export default function PostItem({ post }: Props) {
               {post.author.handle} · {timeAgo(post.createdAt)}
             </span>
           </div>
-          <p className="mt-1 text-gray-800 whitespace-pre-line">{post.content}</p>
+          <div className="prose max-w-none text-gray-800">
+            <ReactMarkdown>{post.content}</ReactMarkdown>
+          </div>
+
           <div className="flex justify-between mt-3 text-gray-500 text-sm max-w-md">
             <button className="flex items-center space-x-1 hover:text-blue-500 transition">
               <MessageCircle size={16} /> <span>{post.replies}</span>
@@ -42,3 +47,4 @@ export default function PostItem({ post }: Props) {
     </div>
   );
 }
+
