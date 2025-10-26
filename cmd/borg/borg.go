@@ -1,8 +1,6 @@
 package main
 
 import (
-	"context"
-	"database/sql"
 	"io/fs"
 	"log"
 	"net/http"
@@ -11,49 +9,16 @@ import (
 	"borg/pkg/config"
 	"borg/pkg/db"
 	"borg/web"
-
-	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/pressly/goose/v3"
 )
 
-var (
-	assets fs.FS
-	ctx    context.Context //nolint
-)
+var assets fs.FS
 
 func main() {
 	conf := config.GetConfig()
 
-	// Connect to PostgreSQL
-	pool, err := sql.Open("pgx", conf.DatabaseUrl)
-	if err != nil {
-		log.Fatalf("❌ Failed to open DB: %v", err)
-	}
-	defer pool.Close() //nolint
+	db.GetDB(conf.DatabaseDriver, conf.DatabaseUrl)
 
-	// Verify connection
-	if err := pool.Ping(); err != nil {
-		log.Fatalf("❌ Failed to connect to PostgreSQL: %v", err)
-	}
-	log.Println("✅ Connected to PostgreSQL")
-
-	ctx = context.Background()
-
-	// Run database migrations
-	migrations, err := db.GetMigrations()
-	if err != nil {
-		log.Fatal(err)
-	}
-	goose.SetBaseFS(migrations)
-
-	if err := goose.SetDialect("postgres"); err != nil {
-		log.Fatal(err)
-	}
-
-	if err := goose.Up(pool, "postgres"); err != nil {
-		log.Fatal(err)
-	}
-
+	var err error
 	assets, err = web.GetAssets()
 	if err != nil {
 		log.Fatal(err)

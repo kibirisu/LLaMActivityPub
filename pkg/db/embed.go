@@ -8,7 +8,7 @@ import (
 //go:embed migrations/*/*.sql
 var migrations embed.FS
 
-func GetMigrations() (res fs.FS, err error) {
+func getMigrations() (res fs.FS, err error) {
 	res, err = fs.Sub(migrations, "migrations")
 	return
 }
