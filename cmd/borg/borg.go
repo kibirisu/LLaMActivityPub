@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"database/sql"
 	"io/fs"
 	"log"
 	"net/http"
@@ -8,6 +10,7 @@ import (
 
 	"borg/pkg/config"
 	"borg/pkg/db"
+	"borg/pkg/db/postgres"
 	"borg/web"
 )
 
@@ -16,9 +19,11 @@ var assets fs.FS
 func main() {
 	conf := config.GetConfig()
 
-	db.GetDB(conf.DatabaseDriver, conf.DatabaseUrl)
+	db, err := db.GetDB(conf.DatabaseDriver, conf.DatabaseUrl)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	var err error
 	assets, err = web.GetAssets()
 	if err != nil {
 		log.Fatal(err)
@@ -27,8 +32,9 @@ func main() {
 	mux := http.NewServeMux()
 
 	// Define routes
+	ctx := context.Background()
 	if conf.AppEnv == "prod" {
-		mux.HandleFunc("/", handleApp)
+		mux.HandleFunc("/", withMiddleware(ctx, handleApp, db))
 	}
 
 	// Start the HTTP server
@@ -39,8 +45,22 @@ func main() {
 	}
 }
 
+func withMiddleware(ctx context.Context, h http.HandlerFunc, dbtx *sql.DB) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.WithValue(ctx, "dbtx", dbtx)
+		r = r.WithContext(ctx)
+		h.ServeHTTP(w, r)
+	})
+}
+
 // Can be done more effectively
 func handleApp(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	bar := ctx.Value("dbtx").(*sql.DB)
+	queries := postgres.New(bar)
+	if _, err := queries.GetUsers(ctx); err != nil {
+		log.Println(err)
+	}
 	file := strings.TrimPrefix(r.URL.Path, "/")
 	info, err := fs.Stat(assets, file)
 	if err != nil {
