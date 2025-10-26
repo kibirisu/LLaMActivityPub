@@ -1,4 +1,4 @@
-APP_NAME := llamap
+APP_NAME := borg
 FRONTEND_DIR := web
 DIST_DIR := $(FRONTEND_DIR)/dist
 BIN_DIR := $(PWD)/bin

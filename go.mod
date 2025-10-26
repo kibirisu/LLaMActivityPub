@@ -1,4 +1,4 @@
-module llamap
+module borg
 
 go 1.25.3
 

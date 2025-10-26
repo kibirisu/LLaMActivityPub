@@ -8,9 +8,9 @@ import (
 	"net/http"
 	"strings"
 
-	"llamap/pkg/config"
-	"llamap/pkg/db"
-	"llamap/web"
+	"borg/pkg/config"
+	"borg/pkg/db"
+	"borg/web"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
