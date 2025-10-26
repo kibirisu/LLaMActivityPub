@@ -18,7 +18,7 @@ import (
 
 var (
 	assets fs.FS
-	ctx    context.Context
+	ctx    context.Context //nolint
 )
 
 func main() {
@@ -29,7 +29,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("❌ Failed to open DB: %v", err)
 	}
-	defer pool.Close()
+	defer pool.Close() //nolint
 
 	// Verify connection
 	if err := pool.Ping(); err != nil {

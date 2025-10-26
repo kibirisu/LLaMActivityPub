@@ -1,0 +1,34 @@
+version: "2"
+run:
+  tests: true
+linters:
+  enable:
+    - gocyclo
+  settings:
+    gocyclo:
+      min-complexity: 10
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 3
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    gofmt:
+      simplify: true
+    goimports:
+      local-prefixes:
+        - github.com/yourusername/yourrepo
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
