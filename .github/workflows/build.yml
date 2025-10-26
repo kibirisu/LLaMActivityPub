@@ -34,8 +34,8 @@ jobs:
         run: pnpm run ci
         working-directory: web
 
-      - name: Build application backend
-        run: make build-backend
-
       - name: Build application frontend
         run: make build-frontend
+
+      - name: Build application backend
+        run: make build-backend

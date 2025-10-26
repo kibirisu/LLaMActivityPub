@@ -25,7 +25,9 @@ jobs:
           sudo mv ./bin/golangci-lint /usr/local/bin/
 
       - name: Run Go Linter
-        run: golangci-lint run ./...
+        run: |
+          mkdir web/dist
+          golangci-lint run ./...
 
   lint-js:
     runs-on: ubuntu-latest
