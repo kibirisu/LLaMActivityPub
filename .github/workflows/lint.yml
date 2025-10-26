@@ -20,7 +20,7 @@ jobs:
           go-version: '1.25.3'
 
       - name: Prepare embedded assets
-        run: mkdir -p web/dist
+        run: mkdir -p web/dist && touch web/dist/index.html
 
       - name: Run Go Linter
         uses: golangci/golangci-lint-action@v8
