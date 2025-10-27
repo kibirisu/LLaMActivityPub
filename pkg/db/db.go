@@ -1,15 +1,25 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"log"
+
+	"borg/pkg/db/models"
+	"borg/pkg/db/postgres"
+	"borg/pkg/db/sqlite"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
 	_ "modernc.org/sqlite"
 )
 
-func GetDB(driver, url string) (*sql.DB, error) {
+type Queries interface {
+	GetUsersQuery(context.Context) ([]models.User, error)
+	CreateUserQuery(context.Context, models.CreateUserParams) error
+}
+
+func GetDB(ctx context.Context, driver, url string) (Queries, error) {
 	var driverName string
 	switch driver {
 	case "sqlite":
@@ -42,5 +52,10 @@ func GetDB(driver, url string) (*sql.DB, error) {
 	if err := goose.Up(pool, driver); err != nil {
 		log.Fatal(err)
 	}
-	return pool, nil
+
+	if driverName == "sqlite" {
+		return sqlite.New(pool), nil
+	} else {
+		return postgres.New(pool), nil
+	}
 }

@@ -1,2 +1,5 @@
 -- name: GetUsers :many
-SELECT id, name FROM users;
+SELECT * FROM users;
+
+-- name: CreateUser :exec
+INSERT INTO users (name, email) VALUES (?, ?);

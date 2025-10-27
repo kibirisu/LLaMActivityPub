@@ -9,25 +9,39 @@ import (
 	"context"
 )
 
-const getUsers = `-- name: GetUsers :many
-SELECT id, name FROM users
+const createUser = `-- name: CreateUser :exec
+INSERT INTO users (name, email) VALUES ($1, $2)
 `
 
-type GetUsersRow struct {
-	ID   int32  `json:"id"`
-	Name string `json:"name"`
+type CreateUserParams struct {
+	Name  string `json:"name"`
+	Email string `json:"email"`
 }
 
-func (q *Queries) GetUsers(ctx context.Context) ([]GetUsersRow, error) {
+func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
+	_, err := q.db.ExecContext(ctx, createUser, arg.Name, arg.Email)
+	return err
+}
+
+const getUsers = `-- name: GetUsers :many
+SELECT id, name, email, created_at FROM users
+`
+
+func (q *Queries) GetUsers(ctx context.Context) ([]User, error) {
 	rows, err := q.db.QueryContext(ctx, getUsers)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetUsersRow
+	var items []User
 	for rows.Next() {
-		var i GetUsersRow
-		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Name,
+			&i.Email,
+			&i.CreatedAt,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

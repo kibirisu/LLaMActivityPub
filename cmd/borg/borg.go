@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"io/fs"
 	"log"
 	"net/http"
@@ -10,16 +9,21 @@ import (
 
 	"borg/pkg/config"
 	"borg/pkg/db"
-	"borg/pkg/db/postgres"
 	"borg/web"
 )
 
-var assets fs.FS
+type contextKey string
+
+var (
+	assets fs.FS
+	dbKey  contextKey = "db"
+)
 
 func main() {
+	ctx := context.Background()
 	conf := config.GetConfig()
 
-	db, err := db.GetDB(conf.DatabaseDriver, conf.DatabaseUrl)
+	db, err := db.GetDB(ctx, conf.DatabaseDriver, conf.DatabaseUrl)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -44,10 +48,10 @@ func main() {
 	}
 }
 
-func withMiddleware(h http.HandlerFunc, dbtx *sql.DB) http.HandlerFunc {
+func withMiddleware(h http.HandlerFunc, db db.Queries) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
-		ctx = context.WithValue(ctx, "queries", postgres.New(dbtx))
+		ctx = context.WithValue(ctx, dbKey, db)
 		r = r.WithContext(ctx)
 		h.ServeHTTP(w, r)
 	})
@@ -56,11 +60,11 @@ func withMiddleware(h http.HandlerFunc, dbtx *sql.DB) http.HandlerFunc {
 // Can be done more effectively
 func handleApp(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	queries, ok := ctx.Value("queries").(*postgres.Queries)
+	queries, ok := ctx.Value(dbKey).(db.Queries)
 	if !ok {
 		log.Fatal("Could not get DB pool")
 	}
-	if _, err := queries.GetUsers(ctx); err != nil {
+	if _, err := queries.GetUsersQuery(ctx); err != nil {
 		log.Println(err)
 	}
 	file := strings.TrimPrefix(r.URL.Path, "/")
