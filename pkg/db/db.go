@@ -14,12 +14,12 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-type Queries interface {
+type Querier interface {
 	GetUsersQuery(context.Context) ([]models.User, error)
 	CreateUserQuery(context.Context, models.CreateUserParams) error
 }
 
-func GetDB(ctx context.Context, driver, url string) (Queries, error) {
+func GetDB(ctx context.Context, driver, url string) (Querier, error) {
 	var driverName string
 	switch driver {
 	case "sqlite":
@@ -53,9 +53,11 @@ func GetDB(ctx context.Context, driver, url string) (Queries, error) {
 		log.Fatal(err)
 	}
 
-	if driverName == "sqlite" {
-		return sqlite.New(pool), nil
+	var res Querier
+	if driver == "sqlite" {
+		res = sqlite.New(pool)
 	} else {
-		return postgres.New(pool), nil
+		res = postgres.New(pool)
 	}
+	return res, nil
 }
