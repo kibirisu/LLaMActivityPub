@@ -32,9 +32,8 @@ func main() {
 	mux := http.NewServeMux()
 
 	// Define routes
-	ctx := context.Background()
 	if conf.AppEnv == "prod" {
-		mux.HandleFunc("/", withMiddleware(ctx, handleApp, db))
+		mux.HandleFunc("/", withMiddleware(handleApp, db))
 	}
 
 	// Start the HTTP server
@@ -45,9 +44,10 @@ func main() {
 	}
 }
 
-func withMiddleware(ctx context.Context, h http.HandlerFunc, dbtx *sql.DB) http.HandlerFunc {
+func withMiddleware(h http.HandlerFunc, dbtx *sql.DB) http.HandlerFunc {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.WithValue(ctx, "dbtx", dbtx)
+		ctx := r.Context()
+		ctx = context.WithValue(ctx, "queries", postgres.New(dbtx))
 		r = r.WithContext(ctx)
 		h.ServeHTTP(w, r)
 	})
@@ -56,8 +56,10 @@ func withMiddleware(ctx context.Context, h http.HandlerFunc, dbtx *sql.DB) http.
 // Can be done more effectively
 func handleApp(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	bar := ctx.Value("dbtx").(*sql.DB)
-	queries := postgres.New(bar)
+	queries, ok := ctx.Value("queries").(*postgres.Queries)
+	if !ok {
+		log.Fatal("Could not get DB pool")
+	}
 	if _, err := queries.GetUsers(ctx); err != nil {
 		log.Println(err)
 	}

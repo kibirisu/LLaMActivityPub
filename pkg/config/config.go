@@ -7,9 +7,9 @@ import (
 )
 
 type Config struct {
-	AppEnv      string `mapstructure:"appenv"`
+	AppEnv         string `mapstructure:"appenv"`
 	DatabaseDriver string `mapstructure:"databasedriver"`
-	DatabaseUrl string `mapstructure:"databaseurl"`
+	DatabaseUrl    string `mapstructure:"databaseurl"`
 }
 
 func GetConfig() *Config {
