@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"net/http"
 
 	"borg/pkg/config"
 	"borg/pkg/db"
@@ -18,5 +19,8 @@ func main() {
 		log.Fatal(err)
 	}
 
-	router.Serve(conf.AppEnv, conf.ListenPort, db)
+	r := router.New(conf.AppEnv, db)
+	if err = http.ListenAndServe(":"+conf.ListenPort, r); err != nil {
+		log.Fatal(err)
+	}
 }

@@ -1,7 +1,6 @@
 package router
 
 import (
-	"context"
 	"encoding/json"
 	"io"
 	"io/fs"
@@ -13,53 +12,44 @@ import (
 	"borg/web"
 )
 
-type contextKey string
-
-var (
+type Router struct {
+	http.Handler
+	db     db.Querier
 	assets fs.FS
-	dbKey  contextKey = "db"
-)
+}
 
-func Serve(appEnv, port string, q db.Querier) {
-	r := http.NewServeMux()
-
-	var err error
-	assets, err = web.GetAssets()
+func New(appEnv string, q db.Querier) *Router {
+	assets, err := web.GetAssets()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	addr := ":" + port
+	r := &Router{db: q, assets: assets}
+
+	h := http.NewServeMux()
 
 	if appEnv == "prod" {
-		r.HandleFunc("/", handleRoot)
-		r.HandleFunc("/static/", func(w http.ResponseWriter, r *http.Request) {
-			http.StripPrefix("/", http.HandlerFunc(handleAssets)).ServeHTTP(w, r)
+		h.HandleFunc("/", r.handleRoot)
+		h.HandleFunc("/static/", func(w http.ResponseWriter, req *http.Request) {
+			http.StripPrefix("/", http.HandlerFunc(r.handleAssets)).ServeHTTP(w, req)
 		})
 	}
-	r.HandleFunc("POST /api/", provideQuerier(handleFoo, q))
+	h.HandleFunc("POST /api/", r.handleFoo)
 
-	if err := http.ListenAndServe(addr, r); err != nil {
-		log.Fatal(err)
-	}
+	r.Handler = h
+
+	return r
 }
 
-func handleRoot(w http.ResponseWriter, r *http.Request) {
-	http.ServeFileFS(w, r, assets, "index.html")
+func (h *Router) handleRoot(w http.ResponseWriter, r *http.Request) {
+	http.ServeFileFS(w, r, h.assets, "index.html")
 }
 
-func handleAssets(w http.ResponseWriter, r *http.Request) {
-	http.FileServerFS(assets).ServeHTTP(w, r)
+func (h *Router) handleAssets(w http.ResponseWriter, r *http.Request) {
+	http.FileServerFS(h.assets).ServeHTTP(w, r)
 }
 
-func handleFoo(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	q, ok := ctx.Value(dbKey).(db.Querier)
-	if !ok {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
+func (h *Router) handleFoo(w http.ResponseWriter, r *http.Request) {
 	var user models.CreateUserParams
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -74,20 +64,16 @@ func handleFoo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Println(user.Name)
-	q.CreateUserQuery(ctx, user)
-	if users, err := q.GetUsersQuery(ctx); err != nil {
+	err = h.db.CreateUserQuery(r.Context(), user)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	if users, err := h.db.GetUsersQuery(r.Context()); err != nil {
 		log.Println(err)
 	} else {
 		log.Println(users[0].Email)
 	}
 	w.WriteHeader(http.StatusOK)
-}
-
-func provideQuerier(h http.HandlerFunc, db db.Querier) http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := r.Context()
-		ctx = context.WithValue(ctx, dbKey, db)
-		r = r.WithContext(ctx)
-		h.ServeHTTP(w, r)
-	})
 }
