@@ -1,28 +1,18 @@
 package db
 
 import (
+	"context"
 	"database/sql"
 	"log"
 
+	"borg/pkg/db/postgres"
+
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/pressly/goose/v3"
-	_ "modernc.org/sqlite"
 )
 
-func GetDB(driver, url string) (*sql.DB, error) {
-	var driverName string
-	switch driver {
-	case "sqlite":
-		driverName = "sqlite"
-		log.Println("Using sqlite driver")
-	case "postgres":
-		driverName = "pgx"
-		log.Println("Using postgres driver")
-	default:
-		log.Fatal("Uknown db driver name")
-	}
-
-	pool, err := sql.Open(driverName, url)
+func GetDB(ctx context.Context, url string) (*postgres.Queries, error) {
+	pool, err := sql.Open("pgx", url)
 	if err != nil {
 		return nil, err
 	}
@@ -35,6 +25,7 @@ func GetDB(driver, url string) (*sql.DB, error) {
 	}
 	goose.SetBaseFS(migrations)
 
+	driver := "postgres"
 	if err := goose.SetDialect(driver); err != nil {
 		log.Fatal(err)
 	}
@@ -42,5 +33,6 @@ func GetDB(driver, url string) (*sql.DB, error) {
 	if err := goose.Up(pool, driver); err != nil {
 		log.Fatal(err)
 	}
-	return pool, nil
+
+	return postgres.New(pool), nil
 }

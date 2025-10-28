@@ -1,53 +1,26 @@
 package main
 
 import (
-	"io/fs"
+	"context"
 	"log"
 	"net/http"
-	"strings"
 
 	"borg/pkg/config"
 	"borg/pkg/db"
-	"borg/web"
+	"borg/pkg/router"
 )
 
-var assets fs.FS
-
 func main() {
+	ctx := context.Background()
 	conf := config.GetConfig()
 
-	db.GetDB(conf.DatabaseDriver, conf.DatabaseUrl)
-
-	var err error
-	assets, err = web.GetAssets()
+	db, err := db.GetDB(ctx, conf.DatabaseUrl)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	mux := http.NewServeMux()
-
-	// Define routes
-	if conf.AppEnv == "prod" {
-		mux.HandleFunc("/", handleApp)
+	r := router.New(conf.AppEnv, db)
+	if err = http.ListenAndServe(":"+conf.ListenPort, r); err != nil {
+		log.Fatal(err)
 	}
-
-	// Start the HTTP server
-	addr := ":8080"
-	log.Printf("🚀 Server running at http://localhost%s\n", addr)
-	if err := http.ListenAndServe(addr, mux); err != nil {
-		log.Fatalf("❌ Server failed: %v", err)
-	}
-}
-
-// Can be done more effectively
-func handleApp(w http.ResponseWriter, r *http.Request) {
-	file := strings.TrimPrefix(r.URL.Path, "/")
-	info, err := fs.Stat(assets, file)
-	if err != nil {
-		log.Println(err)
-		file = "index.html"
-	} else if !info.Mode().IsRegular() {
-		file = "index.html"
-	}
-	http.ServeFileFS(w, r, assets, file)
 }
