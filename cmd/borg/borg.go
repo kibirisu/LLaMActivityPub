@@ -2,19 +2,11 @@ package main
 
 import (
 	"context"
-	"io/fs"
 	"log"
 
 	"borg/pkg/config"
 	"borg/pkg/db"
 	"borg/pkg/router"
-)
-
-type contextKey string
-
-var (
-	assets fs.FS
-	dbKey  contextKey = "db"
 )
 
 func main() {

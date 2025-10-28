@@ -6,11 +6,11 @@ import (
 	"borg/pkg/db/models"
 )
 
-func (u User) Convert() models.User {
+func (u User) toModel() models.User {
 	return models.User(u)
 }
 
-func convert(c models.CreateUserParams) CreateUserParams {
+func toModel(c models.CreateUserParams) CreateUserParams {
 	return CreateUserParams(c)
 }
 
@@ -21,11 +21,11 @@ func (q *Queries) GetUsersQuery(ctx context.Context) ([]models.User, error) {
 	}
 	var users []models.User
 	for _, user := range u {
-		users = append(users, user.Convert())
+		users = append(users, user.toModel())
 	}
 	return users, nil
 }
 
 func (q *Queries) CreateUserQuery(ctx context.Context, arg models.CreateUserParams) error {
-	return q.CreateUser(ctx, convert(arg))
+	return q.CreateUser(ctx, toModel(arg))
 }

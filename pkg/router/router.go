@@ -2,11 +2,14 @@ package router
 
 import (
 	"context"
+	"encoding/json"
+	"io"
 	"io/fs"
 	"log"
 	"net/http"
 
 	"borg/pkg/db"
+	"borg/pkg/db/models"
 	"borg/web"
 )
 
@@ -17,7 +20,7 @@ var (
 	dbKey  contextKey = "db"
 )
 
-func Serve(appEnv, port string, querier db.Querier) {
+func Serve(appEnv, port string, q db.Querier) {
 	r := http.NewServeMux()
 
 	var err error
@@ -29,11 +32,12 @@ func Serve(appEnv, port string, querier db.Querier) {
 	addr := ":" + port
 
 	if appEnv == "prod" {
-		r.HandleFunc("/", provideQuerier(handleRoot, querier))
+		r.HandleFunc("/", handleRoot)
 		r.HandleFunc("/static/", func(w http.ResponseWriter, r *http.Request) {
 			http.StripPrefix("/", http.HandlerFunc(handleAssets)).ServeHTTP(w, r)
 		})
 	}
+	r.HandleFunc("POST /api/", provideQuerier(handleFoo, q))
 
 	if err := http.ListenAndServe(addr, r); err != nil {
 		log.Fatal(err)
@@ -41,19 +45,42 @@ func Serve(appEnv, port string, querier db.Querier) {
 }
 
 func handleRoot(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
-	queries, ok := ctx.Value(dbKey).(db.Querier)
-	if !ok {
-		log.Fatal("Could not get DB pool")
-	}
-	if _, err := queries.GetUsersQuery(ctx); err != nil {
-		log.Println(err)
-	}
 	http.ServeFileFS(w, r, assets, "index.html")
 }
 
 func handleAssets(w http.ResponseWriter, r *http.Request) {
 	http.FileServerFS(assets).ServeHTTP(w, r)
+}
+
+func handleFoo(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	q, ok := ctx.Value(dbKey).(db.Querier)
+	if !ok {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	var user models.CreateUserParams
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	err = json.Unmarshal(body, &user)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	log.Println(user.Name)
+	q.CreateUserQuery(ctx, user)
+	if users, err := q.GetUsersQuery(ctx); err != nil {
+		log.Println(err)
+	} else {
+		log.Println(users[0].Email)
+	}
+	w.WriteHeader(http.StatusOK)
 }
 
 func provideQuerier(h http.HandlerFunc, db db.Querier) http.HandlerFunc {
