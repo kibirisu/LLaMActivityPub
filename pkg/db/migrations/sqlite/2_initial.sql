@@ -1,11 +1,11 @@
 -- +goose Up
 -- Przykładowi użytkownicy
-INSERT INTO users (username, email, password_hash, date_of_birth, bio, followers_count, following_count, is_admin) VALUES
-('jan_kowalski', 'jan@example.com', '$2a$10$hashedpassword1', '1995-03-15', 'Programista z pasją do technologii', 150, 75, 0),
-('anna_nowak', 'anna@example.com', '$2a$10$hashedpassword2', '1992-07-22', 'Designer UX/UI', 200, 120, 0),
-('admin_user', 'admin@borg.com', '$2a$10$hashedpassword3', '1990-01-01', 'Administrator systemu', 50, 10, 1),
-('maria_wisniewska', 'maria@example.com', '$2a$10$hashedpassword4', '1998-11-08', 'Studentka informatyki', 80, 45, 0),
-('piotr_zawadzki', 'piotr@example.com', '$2a$10$hashedpassword5', '1993-05-30', 'Freelancer developer', 90, 60, 0);
+INSERT INTO users (username, password_hash, bio, followers_count, following_count, is_admin) VALUES
+('jan_kowalski', '$2a$10$hashedpassword1', 'Programista z pasją do technologii', 150, 75, 0),
+('anna_nowak', '$2a$10$hashedpassword2', 'Designer UX/UI', 200, 120, 0),
+('admin_user', '$2a$10$hashedpassword3', 'Administrator systemu', 50, 10, 1),
+('maria_wisniewska', '$2a$10$hashedpassword4', 'Studentka informatyki', 80, 45, 0),
+('piotr_zawadzki', '$2a$10$hashedpassword5', 'Freelancer developer', 90, 60, 0);
 
 -- Przykładowe posty
 INSERT INTO posts (user_id, content, like_count, share_count, comment_count) VALUES

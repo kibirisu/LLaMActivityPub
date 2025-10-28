@@ -2,9 +2,7 @@
 CREATE TABLE users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,                    
     username TEXT UNIQUE NOT NULL,     
-    email TEXT UNIQUE NOT NULL,       
     password_hash TEXT NOT NULL,     
-    date_of_birth TEXT,
     bio TEXT,
     followers_count INTEGER DEFAULT 0,        
     following_count INTEGER DEFAULT 0,        
@@ -49,7 +47,6 @@ CREATE TABLE followers (
     CHECK(follower_id != following_id)
 );
 
-/*
 CREATE TABLE comments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     post_id INTEGER NOT NULL REFERENCES posts(id) ,
@@ -59,7 +56,6 @@ CREATE TABLE comments (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
-*/
 
 -- +goose Down
 DROP TABLE IF EXISTS users;
@@ -67,4 +63,4 @@ DROP TABLE IF EXISTS posts;
 DROP TABLE IF EXISTS likes;
 DROP TABLE IF EXISTS shares;
 DROP TABLE IF EXISTS followers;
---DROP TABLE IF EXISTS comments;
+DROP TABLE IF EXISTS comments;

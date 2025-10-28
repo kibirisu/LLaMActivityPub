@@ -8,9 +8,56 @@ import (
 	"database/sql"
 )
 
-type User struct {
+type Comment struct {
+	ID        int64         `json:"id"`
+	PostID    int64         `json:"post_id"`
+	UserID    int64         `json:"user_id"`
+	Content   string        `json:"content"`
+	ParentID  sql.NullInt64 `json:"parent_id"`
+	CreatedAt sql.NullTime  `json:"created_at"`
+	UpdatedAt sql.NullTime  `json:"updated_at"`
+}
+
+type Follower struct {
+	ID          int64        `json:"id"`
+	FollowerID  int64        `json:"follower_id"`
+	FollowingID int64        `json:"following_id"`
+	CreatedAt   sql.NullTime `json:"created_at"`
+}
+
+type Like struct {
 	ID        int64        `json:"id"`
-	Name      string       `json:"name"`
-	Email     string       `json:"email"`
+	PostID    int64        `json:"post_id"`
+	UserID    int64        `json:"user_id"`
 	CreatedAt sql.NullTime `json:"created_at"`
+}
+
+type Post struct {
+	ID           int64         `json:"id"`
+	UserID       int64         `json:"user_id"`
+	Content      string        `json:"content"`
+	LikeCount    sql.NullInt64 `json:"like_count"`
+	ShareCount   sql.NullInt64 `json:"share_count"`
+	CommentCount sql.NullInt64 `json:"comment_count"`
+	CreatedAt    sql.NullTime  `json:"created_at"`
+	UpdatedAt    sql.NullTime  `json:"updated_at"`
+}
+
+type Share struct {
+	ID        int64        `json:"id"`
+	PostID    int64        `json:"post_id"`
+	UserID    int64        `json:"user_id"`
+	CreatedAt sql.NullTime `json:"created_at"`
+}
+
+type User struct {
+	ID             int64          `json:"id"`
+	Username       string         `json:"username"`
+	PasswordHash   string         `json:"password_hash"`
+	Bio            sql.NullString `json:"bio"`
+	FollowersCount sql.NullInt64  `json:"followers_count"`
+	FollowingCount sql.NullInt64  `json:"following_count"`
+	IsAdmin        sql.NullInt64  `json:"is_admin"`
+	CreatedAt      sql.NullTime   `json:"created_at"`
+	UpdatedAt      sql.NullTime   `json:"updated_at"`
 }

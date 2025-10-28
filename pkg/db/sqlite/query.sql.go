@@ -10,24 +10,29 @@ import (
 )
 
 const getUsers = `-- name: GetUsers :many
-SELECT id, name FROM users
+SELECT id, username, password_hash, bio, followers_count, following_count, is_admin, created_at, updated_at FROM users
 `
 
-type GetUsersRow struct {
-	ID   int64  `json:"id"`
-	Name string `json:"name"`
-}
-
-func (q *Queries) GetUsers(ctx context.Context) ([]GetUsersRow, error) {
+func (q *Queries) GetUsers(ctx context.Context) ([]User, error) {
 	rows, err := q.db.QueryContext(ctx, getUsers)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []GetUsersRow
+	var items []User
 	for rows.Next() {
-		var i GetUsersRow
-		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.PasswordHash,
+			&i.Bio,
+			&i.FollowersCount,
+			&i.FollowingCount,
+			&i.IsAdmin,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)
