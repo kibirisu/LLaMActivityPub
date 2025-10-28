@@ -1,5 +1,5 @@
 bin/
 .env
-*.db
 .idea/
 .vscode/
+tmp/

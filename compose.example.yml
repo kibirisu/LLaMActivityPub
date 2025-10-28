@@ -2,13 +2,11 @@ services:
   db:
     image: postgres:18
     container_name: db
-    ports:
-      - "5432:5432"
     volumes:
       - db:/var/lib/postgresql
     environment:
-      - POSTGRES_DB=dev
-      - POSTGRES_USER=llamap
+      - POSTGRES_DB=borg
+      - POSTGRES_USER=borg
       - POSTGRES_PASSWORD=changeme
   app:
     build: .
