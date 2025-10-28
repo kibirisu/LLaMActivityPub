@@ -7,16 +7,19 @@ import (
 )
 
 type Config struct {
-	AppEnv      string `mapstructure:"appenv"`
+	AppEnv         string `mapstructure:"appenv"`
+	ListenPort     string `mapstructure:"listenport"`
 	DatabaseDriver string `mapstructure:"databasedriver"`
-	DatabaseUrl string `mapstructure:"databaseurl"`
+	DatabaseUrl    string `mapstructure:"databaseurl"`
 }
 
 func GetConfig() *Config {
 	viper.SetDefault("AppEnv", "prod")
+	viper.SetDefault("ListenPort", "8080")
 	viper.SetDefault("DatabaseUrl", "file:borg.db")
 	viper.SetDefault("DatabaseDriver", "sqlite")
 	viper.RegisterAlias("AppEnv", "app_env")
+	viper.RegisterAlias("ListenPort", "listen_port")
 	viper.RegisterAlias("DatabaseUrl", "database_url")
 	viper.RegisterAlias("DatabaseDriver", "database_driver")
 	viper.SetConfigFile(".env")
