@@ -1,70 +1,56 @@
 -- +goose Up
-CREATE TABLE users (
-    id SERIAL PRIMARY KEY,                    
-    username VARCHAR(50) UNIQUE NOT NULL,     
-    email VARCHAR(255) UNIQUE NOT NULL,       
-    password_hash VARCHAR(255) NOT NULL,     
-    date_of_birth DATE,
-    bio TEXT,
-    followers_count INTEGER DEFAULT 0,        
-    following_count INTEGER DEFAULT 0,        
-    is_admin BOOLEAN DEFAULT FALSE,           
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+-- Przykładowi użytkownicy
+INSERT INTO users (username, email, password_hash, date_of_birth, bio, followers_count, following_count, is_admin) VALUES
+('jan_kowalski', 'jan@example.com', '$2a$10$hashedpassword1', '1995-03-15', 'Programista z pasją do technologii', 150, 75, false),
+('anna_nowak', 'anna@example.com', '$2a$10$hashedpassword2', '1992-07-22', 'Designer UX/UI', 200, 120, false),
+('admin_user', 'admin@borg.com', '$2a$10$hashedpassword3', '1990-01-01', 'Administrator systemu', 50, 10, true),
+('maria_wisniewska', 'maria@example.com', '$2a$10$hashedpassword4', '1998-11-08', 'Studentka informatyki', 80, 45, false),
+('piotr_zawadzki', 'piotr@example.com', '$2a$10$hashedpassword5', '1993-05-30', 'Freelancer developer', 90, 60, false);
 
-CREATE TABLE posts (
-    id SERIAL PRIMARY KEY,                    
-    user_id INTEGER NOT NULL REFERENCES users(id),
-    content TEXT NOT NULL,
-    like_count INTEGER DEFAULT 0,
-    share_count INTEGER DEFAULT 0,
-    comment_count INTEGER DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+-- Przykładowe posty
+INSERT INTO posts (user_id, content, like_count, share_count, comment_count) VALUES
+(1, 'Dzisiaj skończyłem projekt w React! 🚀 #programming #react', 25, 5, 8),
+(2, 'Nowy design system gotowy! Co myślicie? #design #ux', 45, 12, 15),
+(1, 'Debugowanie przez 3 godziny... w końcu znalazłem błąd w jednej linii 😅', 18, 3, 6),
+(4, 'Pierwszy dzień na nowym stanowisku! Jestem podekscytowana 💪', 35, 8, 12),
+(3, 'Aktualizacja systemu zaplanowana na jutro 2:00 AM', 5, 1, 2),
+(5, 'Freelancing daje mi wolność, ale czasem brakuje stabilności 🤔', 22, 4, 9),
+(2, 'Prototyp nowej aplikacji mobilnej gotowy! #mobile #app', 30, 7, 11),
+(1, 'Code review z zespołem - zawsze uczę się czegoś nowego', 15, 2, 5);
 
-CREATE TABLE likes (
-    id SERIAL PRIMARY KEY,                    
-    post_id INTEGER NOT NULL REFERENCES posts(id) ,
-    user_id INTEGER NOT NULL REFERENCES users(id) ,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(post_id, user_id)
-);
+-- Przykładowe like'i
+INSERT INTO likes (post_id, user_id) VALUES
+(1, 2), (1, 3), (1, 4), (1, 5),
+(2, 1), (2, 3), (2, 4), (2, 5),
+(3, 2), (3, 4), (3, 5),
+(4, 1), (4, 2), (4, 3), (4, 5),
+(5, 1), (5, 2),
+(6, 1), (6, 2), (6, 3), (6, 4),
+(7, 1), (7, 3), (7, 4), (7, 5),
+(8, 2), (8, 4), (8, 5);
 
-CREATE TABLE shares (
-    id SERIAL PRIMARY KEY,                 
-    post_id INTEGER NOT NULL REFERENCES posts(id) ,
-    user_id INTEGER NOT NULL REFERENCES users(id) ,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(post_id, user_id)
-);
+-- Przykładowe share'y
+INSERT INTO shares (post_id, user_id) VALUES
+(1, 2), (1, 4),
+(2, 1), (2, 3), (2, 5),
+(3, 2),
+(4, 1), (4, 3), (4, 5),
+(5, 1),
+(6, 2), (6, 4),
+(7, 1), (7, 3), (7, 5),
+(8, 2);
 
-CREATE TABLE followers (
-    id SERIAL PRIMARY KEY,
-    follower_id INTEGER NOT NULL REFERENCES users(id) ,
-    following_id INTEGER NOT NULL REFERENCES users(id) ,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(follower_id, following_id),
-    CHECK(follower_id != following_id)
-);
-
-/*
-CREATE TABLE comments (
-    id SERIAL PRIMARY KEY,
-    post_id INTEGER NOT NULL REFERENCES posts(id) ,
-    user_id INTEGER NOT NULL REFERENCES users(id) ,
-    content TEXT NOT NULL,
-    parent_id INTEGER REFERENCES comments(id),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-*/
+-- Przykładowe followery
+INSERT INTO followers (follower_id, following_id) VALUES
+(2, 1), (3, 1), (4, 1), (5, 1),  -- wszyscy śledzą Jana
+(1, 2), (3, 2), (4, 2), (5, 2),  -- wszyscy śledzą Annę
+(1, 3), (2, 3), (4, 3), (5, 3),  -- wszyscy śledzą admina
+(1, 4), (2, 4), (3, 4), (5, 4),  -- wszyscy śledzą Marię
+(1, 5), (2, 5), (3, 5), (4, 5);  -- wszyscy śledzą Piotra
 
 -- +goose Down
-DROP TABLE IF EXISTS users;
-DROP TABLE IF EXISTS posts;
-DROP TABLE IF EXISTS likes;
-DROP TABLE IF EXISTS shares;
-DROP TABLE IF EXISTS followers;
---DROP TABLE IF EXISTS comments;
+DELETE FROM followers;
+DELETE FROM shares;
+DELETE FROM likes;
+DELETE FROM posts;
+DELETE FROM users;
