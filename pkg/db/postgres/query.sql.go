@@ -9,22 +9,8 @@ import (
 	"context"
 )
 
-const createUser = `-- name: CreateUser :exec
-INSERT INTO users (name, email) VALUES ($1, $2)
-`
-
-type CreateUserParams struct {
-	Name  string `json:"name"`
-	Email string `json:"email"`
-}
-
-func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
-	_, err := q.db.ExecContext(ctx, createUser, arg.Name, arg.Email)
-	return err
-}
-
 const getUsers = `-- name: GetUsers :many
-SELECT id, name, email, created_at FROM users
+SELECT id, username, password_hash, bio, followers_count, following_count, is_admin, created_at, updated_at FROM users
 `
 
 func (q *Queries) GetUsers(ctx context.Context) ([]User, error) {
@@ -38,9 +24,14 @@ func (q *Queries) GetUsers(ctx context.Context) ([]User, error) {
 		var i User
 		if err := rows.Scan(
 			&i.ID,
-			&i.Name,
-			&i.Email,
+			&i.Username,
+			&i.PasswordHash,
+			&i.Bio,
+			&i.FollowersCount,
+			&i.FollowingCount,
+			&i.IsAdmin,
 			&i.CreatedAt,
+			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}

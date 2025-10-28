@@ -14,7 +14,7 @@ func main() {
 	ctx := context.Background()
 	conf := config.GetConfig()
 
-	db, err := db.GetDB(ctx, conf.DatabaseDriver, conf.DatabaseUrl)
+	db, err := db.GetDB(ctx, conf.DatabaseUrl)
 	if err != nil {
 		log.Fatal(err)
 	}
