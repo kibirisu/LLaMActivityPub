@@ -1,18 +1,10 @@
 version: "2"
 sql:
   - engine: "postgresql"
-    queries: "pkg/db/postgres/query.sql"
-    schema: "pkg/db/migrations/postgres"
+    queries: "pkg/db/query.sql"
+    schema: "pkg/db/migrations"
     gen:
       go:
-        package: "postgres"
-        out: "pkg/db/postgres"
-        emit_json_tags: true
-  - engine: "sqlite"
-    queries: "pkg/db/sqlite/query.sql"
-    schema: "pkg/db/migrations/sqlite"
-    gen:
-      go:
-        package: "sqlite"
-        out: "pkg/db/sqlite"
+        package: "db"
+        out: "pkg/db"
         emit_json_tags: true

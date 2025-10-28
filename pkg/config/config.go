@@ -7,9 +7,9 @@ import (
 )
 
 type Config struct {
-	AppEnv         string `mapstructure:"appenv"`
-	ListenPort     string `mapstructure:"listenport"`
-	DatabaseUrl    string `mapstructure:"databaseurl"`
+	AppEnv      string `mapstructure:"appenv"`
+	ListenPort  string `mapstructure:"listenport"`
+	DatabaseUrl string `mapstructure:"databaseurl"`
 }
 
 func GetConfig() *Config {

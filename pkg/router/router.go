@@ -5,17 +5,17 @@ import (
 	"log"
 	"net/http"
 
-	"borg/pkg/db/postgres"
+	"borg/pkg/db"
 	"borg/web"
 )
 
 type Router struct {
 	http.Handler
-	db     *postgres.Queries
+	db     *db.Queries
 	assets fs.FS
 }
 
-func New(appEnv string, q *postgres.Queries) *Router {
+func New(appEnv string, q *db.Queries) *Router {
 	assets, err := web.GetAssets()
 	if err != nil {
 		log.Fatal(err)
