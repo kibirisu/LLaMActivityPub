@@ -28,36 +28,38 @@ $(BIN_DIR)/air: | $(BIN_DIR)
 	@GOBIN=$(BIN_DIR) go install github.com/air-verse/air@latest
 
 $(NODE_MODULES): $(LOCKFILE) $(PACKAGE_JSON)
-	cd $(FRONTEND_DIR) && pnpm install --frozen-lockfile
+	@echo Installing Node modules...
+	@pnpm --prefix $(FRONTEND_DIR) install --frozen-lockfile
 
 .PHONY: run
 run: build-backend 
 	$(BIN_DIR)/$(APP_NAME)
 
 .PHONY: build
-build: build-backend build-frontend
+build: build-backend 
 
 .PHONY: build-backend
-build-backend:
+build-backend: build-frontend
 	$(GO_BUILD_CMD)
 
 .PHONY: build-frontend
 build-frontend: $(NODE_MODULES)
-	cd $(FRONTEND_DIR) && pnpm build
+	@echo Building React app...
+	@pnpm --prefix $(FRONTEND_DIR) build
 
 .PHONY: dev
 dev: dev-db
 	@$(MAKE) -j2 dev-backend dev-frontend
 
 .PHONY: dev-backend
-dev-backend: setup
+dev-backend: setup build-frontend
 	@echo Starting dev server...
 	@APP_ENV=dev DATABASE_URL=$(DEV_DB_URL) air $(AIR_ARGS)
 
 .PHONY: dev-frontend
 dev-frontend: $(NODE_MODULES)
-	@echo Starting dev react app...
-	@cd $(FRONTEND_DIR) && pnpm dev
+	@echo Starting dev React app...
+	@pnpm --prefix $(FRONTEND_DIR) dev
 
 .PHONY: dev-db
 dev-db:
