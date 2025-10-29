@@ -1,0 +1,15 @@
+{
+    "name": "Borg Dev Environment",
+    "dockerComposeFile": "compose.yml",
+    "service": "app",
+    "workspaceFolder": "/workspace",
+    "features": {
+        "ghcr.io/devcontainers/features/go:1": {
+            "version": "1.25.3-alpine"
+        },
+        "ghcr.io/devcontainers/features/node:1": {
+            "version": "lts-alpine"
+        }
+    },
+    "forwardPorts": [8080]
+}
