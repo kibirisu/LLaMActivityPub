@@ -3,6 +3,9 @@ services:
     build:
       context: ..
       dockerfile: .devcontainer/Dockerfile
+    volumes:
+      - ..:/workspace:cached
+      - node_modules:/workspace/web/node_modules
     environment:
       - DATABASE_URL
       - APP_ENV
@@ -10,6 +13,7 @@ services:
       - db
     ports:
       - "8080:8080"
+    command: sleep infinity
     networks:
         - external_network
         - internal_network
@@ -27,6 +31,7 @@ services:
 
 volumes:
   postgres-data:
+  node_modules:
 
 networks:
   external_network:
