@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { type Post, samplePosts } from './feedData';
 import NewPostBox from './NewPostBox';
 import PostItem from './PostItem';
+import type { User } from '../../models/user';
 
 export default function MainFeed() {
   const [posts, setPosts] = useState<Post[]>(samplePosts);
@@ -19,12 +20,37 @@ export default function MainFeed() {
     setPosts((p) => [newPost, ...p]);
   }
 
+  const user: User = {
+      id: 0,
+      username: 'zbyszek',
+      password_hash: 'p@ssword'
+  }
+
+  const [val, setVal] = useState("");
+
+  async function doRequest() {
+    let payload = JSON.stringify(user);
+    console.log(payload)
+    fetch("/api/", {
+      method: "POST",
+      body: payload,
+      headers: {
+        "Content-Type": "application/json"
+      }
+    }).then((resp) => {
+      console.log(resp)
+    });
+    setVal("done");
+  }
+
   return (
     <div className="max-w-2xl mx-auto border-x border-gray-300 min-h-screen bg-white">
       <header className="p-4 border-b border-gray-300 text-xl font-bold sticky top-0 bg-white/80 backdrop-blur z-10">
         Home
       </header>
       <NewPostBox onPost={addPost} />
+      <p>{val}</p>
+      <button className="btn" onClick={doRequest}>Default</button>
       {posts.map((post) => (
         <PostItem key={post.id} post={post} />
       ))}

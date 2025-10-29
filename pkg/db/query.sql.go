@@ -7,7 +7,40 @@ package db
 
 import (
 	"context"
+	"database/sql"
 )
+
+const addUser = `-- name: AddUser :exec
+INSERT INTO users (
+  username,
+  password_hash,
+  bio,
+  followers_count,
+  following_count,
+  is_admin
+) VALUES ($1, $2, $3, $4, $5, $6)
+`
+
+type AddUserParams struct {
+	Username       string         `json:"username"`
+	PasswordHash   string         `json:"password_hash"`
+	Bio            sql.NullString `json:"bio"`
+	FollowersCount sql.NullInt32  `json:"followers_count"`
+	FollowingCount sql.NullInt32  `json:"following_count"`
+	IsAdmin        sql.NullBool   `json:"is_admin"`
+}
+
+func (q *Queries) AddUser(ctx context.Context, arg AddUserParams) error {
+	_, err := q.db.ExecContext(ctx, addUser,
+		arg.Username,
+		arg.PasswordHash,
+		arg.Bio,
+		arg.FollowersCount,
+		arg.FollowingCount,
+		arg.IsAdmin,
+	)
+	return err
+}
 
 const getUsers = `-- name: GetUsers :many
 SELECT id, username, password_hash, bio, followers_count, following_count, is_admin, created_at, updated_at FROM users
