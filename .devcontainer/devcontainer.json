@@ -6,5 +6,5 @@
     "features": {
         "ghcr.io/devcontainers/features/node:1": {}
     },
-    "forwardPorts": [8080],
+    "forwardPorts": [8080]
 }
