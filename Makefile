@@ -12,6 +12,7 @@ LOCKFILE := $(FRONTEND_DIR)/pnpm-lock.yaml
 PACKAGE_JSON := $(FRONTEND_DIR)/package.json
 
 export PATH := $(BIN_DIR):$(PATH)
+export GOEXPERIMENT := jsonv2
 
 $(BIN_DIR):
 	mkdir -p $(BIN_DIR)

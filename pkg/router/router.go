@@ -1,8 +1,7 @@
 package router
 
 import (
-	"encoding/json"
-	"io"
+	"encoding/json/v2" // experimental features
 	"io/fs"
 	"log"
 	"net/http"
@@ -35,24 +34,8 @@ func NewRouter(appEnv string, q *db.Queries) *Router {
 			http.StripPrefix("/", http.HandlerFunc(r.handleAssets)).ServeHTTP(w, req)
 		})
 	}
-	h.HandleFunc("/api/", func(w http.ResponseWriter, req *http.Request) {
-		body, err := io.ReadAll(req.Body)
-		if err != nil {
-			log.Println(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		log.Println(string(body))
-		var user db.AddUserQueryParams
-		json.Unmarshal(body, &user)
-		log.Println(user)
-		if err = r.ds.AddUser(req.Context(), user); err != nil {
-			log.Println(err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-	})
+	h.HandleFunc("GET /api/", r.handleGetUsers)
+	h.HandleFunc("POST /api/", r.handleCreateUser)
 
 	r.Handler = h
 
@@ -65,4 +48,34 @@ func (h *Router) handleRoot(w http.ResponseWriter, r *http.Request) {
 
 func (h *Router) handleAssets(w http.ResponseWriter, r *http.Request) {
 	http.FileServerFS(h.assets).ServeHTTP(w, r)
+}
+
+func (h *Router) handleCreateUser(w http.ResponseWriter, r *http.Request) {
+	var user db.AddUserQueryParams
+	if err := json.UnmarshalRead(r.Body, &user); err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	if err := h.ds.AddUser(r.Context(), user); err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+}
+
+func (h *Router) handleGetUsers(w http.ResponseWriter, r *http.Request) {
+	users, err := h.ds.GetUsers(r.Context())
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	if err = json.MarshalWrite(w, &users); err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }
