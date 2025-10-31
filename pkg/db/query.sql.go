@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const addUser = `-- name: AddUser :exec
+const addUserQuery = `-- name: AddUserQuery :exec
 INSERT INTO users (
   username,
   password_hash,
@@ -21,7 +21,7 @@ INSERT INTO users (
 ) VALUES ($1, $2, $3, $4, $5, $6)
 `
 
-type AddUserParams struct {
+type AddUserQueryParams struct {
 	Username       string         `json:"username"`
 	PasswordHash   string         `json:"password_hash"`
 	Bio            sql.NullString `json:"bio"`
@@ -30,8 +30,8 @@ type AddUserParams struct {
 	IsAdmin        sql.NullBool   `json:"is_admin"`
 }
 
-func (q *Queries) AddUser(ctx context.Context, arg AddUserParams) error {
-	_, err := q.db.ExecContext(ctx, addUser,
+func (q *Queries) AddUserQuery(ctx context.Context, arg AddUserQueryParams) error {
+	_, err := q.db.ExecContext(ctx, addUserQuery,
 		arg.Username,
 		arg.PasswordHash,
 		arg.Bio,
@@ -42,12 +42,12 @@ func (q *Queries) AddUser(ctx context.Context, arg AddUserParams) error {
 	return err
 }
 
-const getUsers = `-- name: GetUsers :many
+const getUsersQuery = `-- name: GetUsersQuery :many
 SELECT id, username, password_hash, bio, followers_count, following_count, is_admin, created_at, updated_at FROM users
 `
 
-func (q *Queries) GetUsers(ctx context.Context) ([]User, error) {
-	rows, err := q.db.QueryContext(ctx, getUsers)
+func (q *Queries) GetUsersQuery(ctx context.Context) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, getUsersQuery)
 	if err != nil {
 		return nil, err
 	}

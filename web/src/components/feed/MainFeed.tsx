@@ -21,9 +21,8 @@ export default function MainFeed() {
   }
 
   const user: User = {
-      id: 0,
-      username: 'zbyszek',
-      password_hash: 'p@ssword'
+    username: 'zbyszek',
+    password_hash: 'p@ssword'
   }
 
   const [val, setVal] = useState("");

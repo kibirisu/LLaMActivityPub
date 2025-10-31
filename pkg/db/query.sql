@@ -1,7 +1,7 @@
--- name: GetUsers :many
+-- name: GetUsersQuery :many
 SELECT * FROM users;
 
--- name: AddUser :exec
+-- name: AddUserQuery :exec
 INSERT INTO users (
   username,
   password_hash,

@@ -1,30 +1,31 @@
 package router
 
 import (
-	"database/sql"
 	"encoding/json"
 	"io"
 	"io/fs"
 	"log"
 	"net/http"
 
+	"borg/pkg/datastore"
 	"borg/pkg/db"
 	"borg/web"
 )
 
 type Router struct {
 	http.Handler
-	db     *db.Queries
+	ds     datastore.DataStore
 	assets fs.FS
 }
 
-func New(appEnv string, q *db.Queries) *Router {
+func NewRouter(appEnv string, q *db.Queries) *Router {
 	assets, err := web.GetAssets()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	r := &Router{db: q, assets: assets}
+	ds := datastore.NewDataStore(q)
+	r := &Router{ds: ds, assets: assets}
 
 	h := http.NewServeMux()
 
@@ -38,21 +39,14 @@ func New(appEnv string, q *db.Queries) *Router {
 		body, err := io.ReadAll(req.Body)
 		if err != nil {
 			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		log.Println(string(body))
-		var user db.User
+		var user db.AddUserQueryParams
 		json.Unmarshal(body, &user)
 		log.Println(user)
-		newUser := db.AddUserParams{
-			Username:       user.Username,
-			PasswordHash:   user.PasswordHash,
-			Bio:            sql.NullString{},
-			FollowersCount: sql.NullInt32{},
-			FollowingCount: sql.NullInt32{},
-			IsAdmin:        sql.NullBool{},
-		}
-		if err = r.db.AddUser(req.Context(), newUser); err != nil {
+		if err = r.ds.AddUser(req.Context(), user); err != nil {
 			log.Println(err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
