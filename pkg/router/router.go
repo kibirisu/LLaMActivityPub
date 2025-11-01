@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"log"
 	"net/http"
+	"strconv"
 
 	"borg/pkg/datastore"
 	"borg/pkg/db"
@@ -36,6 +37,9 @@ func NewRouter(appEnv string, q *db.Queries) *Router {
 	}
 	h.HandleFunc("GET /api/", r.handleGetUsers)
 	h.HandleFunc("POST /api/", r.handleCreateUser)
+	h.HandleFunc("GET /api/{id}", r.handleGetUser)
+	h.HandleFunc("DELETE /api/{id}", r.handleDeleteUser)
+	h.HandleFunc("PUT /api/{id}", r.handleUpdateUser)
 
 	r.Handler = h
 
@@ -73,6 +77,71 @@ func (h *Router) handleGetUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err = json.MarshalWrite(w, &users); err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func (h *Router) handleGetUser(w http.ResponseWriter, r *http.Request) {
+	idVal := r.PathValue("id")
+	if idVal == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	id, err := strconv.Atoi(idVal)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	user, err := h.ds.GetUser(r.Context(), int32(id))
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	if err = json.MarshalWrite(w, &user); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func (h *Router) handleDeleteUser(w http.ResponseWriter, r *http.Request) {
+	idVal := r.PathValue("id")
+	if idVal == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	id, err := strconv.Atoi(idVal)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	if err = h.ds.DeleteUser(r.Context(), int32(id)); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func (h *Router) handleUpdateUser(w http.ResponseWriter, r *http.Request) {
+	idVal := r.PathValue("id")
+	if idVal == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	id, err := strconv.Atoi(idVal)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	var user db.UpdateUserQueryParams
+	if err = json.UnmarshalRead(r.Body, &user); err != nil || user.ID != int32(id) {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	if err = h.ds.UpdateUser(r.Context(), user); err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
