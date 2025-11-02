@@ -23,11 +23,11 @@ INSERT INTO users (
 
 type AddUserQueryParams struct {
 	Username       string         `json:"username"`
-	PasswordHash   string         `json:"password_hash"`
+	PasswordHash   string         `json:"passwordHash"`
 	Bio            sql.NullString `json:"bio"`
-	FollowersCount sql.NullInt32  `json:"followers_count"`
-	FollowingCount sql.NullInt32  `json:"following_count"`
-	IsAdmin        sql.NullBool   `json:"is_admin"`
+	FollowersCount sql.NullInt32  `json:"followersCount"`
+	FollowingCount sql.NullInt32  `json:"followingCount"`
+	IsAdmin        sql.NullBool   `json:"isAdmin"`
 }
 
 func (q *Queries) AddUserQuery(ctx context.Context, arg AddUserQueryParams) error {
@@ -115,11 +115,11 @@ UPDATE users SET password_hash = $2, bio = $3, followers_count = $4, following_c
 
 type UpdateUserQueryParams struct {
 	ID             int32          `json:"id"`
-	PasswordHash   string         `json:"password_hash"`
+	PasswordHash   string         `json:"passwordHash"`
 	Bio            sql.NullString `json:"bio"`
-	FollowersCount sql.NullInt32  `json:"followers_count"`
-	FollowingCount sql.NullInt32  `json:"following_count"`
-	IsAdmin        sql.NullBool   `json:"is_admin"`
+	FollowersCount sql.NullInt32  `json:"followersCount"`
+	FollowingCount sql.NullInt32  `json:"followingCount"`
+	IsAdmin        sql.NullBool   `json:"isAdmin"`
 }
 
 func (q *Queries) UpdateUserQuery(ctx context.Context, arg UpdateUserQueryParams) error {

@@ -10,54 +10,54 @@ import (
 
 type Comment struct {
 	ID        int32         `json:"id"`
-	PostID    int32         `json:"post_id"`
-	UserID    int32         `json:"user_id"`
+	PostID    int32         `json:"postId"`
+	UserID    int32         `json:"userId"`
 	Content   string        `json:"content"`
-	ParentID  sql.NullInt32 `json:"parent_id"`
-	CreatedAt sql.NullTime  `json:"created_at"`
-	UpdatedAt sql.NullTime  `json:"updated_at"`
+	ParentID  sql.NullInt32 `json:"parentId"`
+	CreatedAt sql.NullTime  `json:"createdAt"`
+	UpdatedAt sql.NullTime  `json:"updatedAt"`
 }
 
 type Follower struct {
 	ID          int32        `json:"id"`
-	FollowerID  int32        `json:"follower_id"`
-	FollowingID int32        `json:"following_id"`
-	CreatedAt   sql.NullTime `json:"created_at"`
+	FollowerID  int32        `json:"followerId"`
+	FollowingID int32        `json:"followingId"`
+	CreatedAt   sql.NullTime `json:"createdAt"`
 }
 
 type Like struct {
 	ID        int32        `json:"id"`
-	PostID    int32        `json:"post_id"`
-	UserID    int32        `json:"user_id"`
-	CreatedAt sql.NullTime `json:"created_at"`
+	PostID    int32        `json:"postId"`
+	UserID    int32        `json:"userId"`
+	CreatedAt sql.NullTime `json:"createdAt"`
 }
 
 type Post struct {
 	ID           int32         `json:"id"`
-	UserID       int32         `json:"user_id"`
+	UserID       int32         `json:"userId"`
 	Content      string        `json:"content"`
-	LikeCount    sql.NullInt32 `json:"like_count"`
-	ShareCount   sql.NullInt32 `json:"share_count"`
-	CommentCount sql.NullInt32 `json:"comment_count"`
-	CreatedAt    sql.NullTime  `json:"created_at"`
-	UpdatedAt    sql.NullTime  `json:"updated_at"`
+	LikeCount    sql.NullInt32 `json:"likeCount"`
+	ShareCount   sql.NullInt32 `json:"shareCount"`
+	CommentCount sql.NullInt32 `json:"commentCount"`
+	CreatedAt    sql.NullTime  `json:"createdAt"`
+	UpdatedAt    sql.NullTime  `json:"updatedAt"`
 }
 
 type Share struct {
 	ID        int32        `json:"id"`
-	PostID    int32        `json:"post_id"`
-	UserID    int32        `json:"user_id"`
-	CreatedAt sql.NullTime `json:"created_at"`
+	PostID    int32        `json:"postId"`
+	UserID    int32        `json:"userId"`
+	CreatedAt sql.NullTime `json:"createdAt"`
 }
 
 type User struct {
 	ID             int32          `json:"id"`
 	Username       string         `json:"username"`
-	PasswordHash   string         `json:"password_hash"`
+	PasswordHash   string         `json:"passwordHash"`
 	Bio            sql.NullString `json:"bio"`
-	FollowersCount sql.NullInt32  `json:"followers_count"`
-	FollowingCount sql.NullInt32  `json:"following_count"`
-	IsAdmin        sql.NullBool   `json:"is_admin"`
-	CreatedAt      sql.NullTime   `json:"created_at"`
-	UpdatedAt      sql.NullTime   `json:"updated_at"`
+	FollowersCount sql.NullInt32  `json:"followersCount"`
+	FollowingCount sql.NullInt32  `json:"followingCount"`
+	IsAdmin        sql.NullBool   `json:"isAdmin"`
+	CreatedAt      sql.NullTime   `json:"createdAt"`
+	UpdatedAt      sql.NullTime   `json:"updatedAt"`
 }
