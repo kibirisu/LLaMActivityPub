@@ -31,5 +31,8 @@
     "rules": {
       "recommended": true
     }
+  },
+  "files": {
+    "includes": ["**", "!!dist", "!!db"]
   }
 }
