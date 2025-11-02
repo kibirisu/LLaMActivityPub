@@ -12,4 +12,39 @@ repos:
   hooks:
   - id: go-fmt
   - id: golangci-lint
-    args: ["--fix"]
+    language: system
+    entry: bash -lc "cd pkg && GOEXPERIMENT=jsonv2 golangci-lint run --fix ./..."
+    pass_filenames: false
+- repo: local
+  hooks:
+  - id: biome-format
+    name: Biome Format
+    entry: |
+      bash -lc '
+      cd web
+      if command -v biome >/dev/null 2>&1; then
+        echo "Using global biome command"
+        biome format --write .
+      else
+        echo "Global biome not found, using pnpm run format"
+        pnpm run format
+      fi'
+    language: system
+    pass_filenames: false
+    files: "\\.(js|jsx|ts|tsx|json|mjs|cjs)$"
+
+  - id: biome-check
+    name: Biome Check
+    entry: |
+      bash -lc '
+      cd web
+      if command -v biome >/dev/null 2>&1; then
+        echo "Using global biome command"
+        biome check .
+      else
+        echo "Global biome not found, using pnpm run check"
+        pnpm run check
+      fi'
+    language: system
+    pass_filenames: false
+    files: "\\.(js|jsx|ts|tsx|json|mjs|cjs)$"
