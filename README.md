@@ -2,11 +2,11 @@
 
 ## 🧠 Overview
 
-- **Backend:** Go (`net/http` + embedded FS)  
-- **Frontend:** React + Rsbuild + pnpm  
-- **Database:** PostgreSQL  
-- **Migrations:** [Goose](https://github.com/pressly/goose)  
-- **SQL generation:** [sqlc](https://sqlc.dev)  
+- **Backend:** Go (`net/http` + embedded FS)
+- **Frontend:** React + Rsbuild + pnpm
+- **Database:** PostgreSQL
+- **Migrations:** [Goose](https://github.com/pressly/goose)
+- **SQL generation:** [sqlc](https://sqlc.dev)
 
 ---
 
