@@ -12,6 +12,7 @@ LOCKFILE := $(FRONTEND_DIR)/pnpm-lock.yaml
 PACKAGE_JSON := $(FRONTEND_DIR)/package.json
 
 export PATH := $(BIN_DIR):$(PATH)
+export GOEXPERIMENT := jsonv2
 
 $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
@@ -48,11 +49,11 @@ build-frontend: $(NODE_MODULES)
 	@pnpm --prefix $(FRONTEND_DIR) build
 
 .PHONY: dev
-dev: dev-db
+dev:
 	@$(MAKE) -j2 dev-backend dev-frontend
 
 .PHONY: dev-backend
-dev-backend: setup build-frontend
+dev-backend: dev-db setup build-frontend
 	@echo Starting dev server...
 	@APP_ENV=dev DATABASE_URL=$(DEV_DB_URL) air $(AIR_ARGS)
 

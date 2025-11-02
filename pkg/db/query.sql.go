@@ -7,14 +7,77 @@ package db
 
 import (
 	"context"
+	"database/sql"
 )
 
-const getUsers = `-- name: GetUsers :many
+const addUserQuery = `-- name: AddUserQuery :exec
+INSERT INTO users (
+  username,
+  password_hash,
+  bio,
+  followers_count,
+  following_count,
+  is_admin
+) VALUES ($1, $2, $3, $4, $5, $6)
+`
+
+type AddUserQueryParams struct {
+	Username       string         `json:"username"`
+	PasswordHash   string         `json:"password_hash"`
+	Bio            sql.NullString `json:"bio"`
+	FollowersCount sql.NullInt32  `json:"followers_count"`
+	FollowingCount sql.NullInt32  `json:"following_count"`
+	IsAdmin        sql.NullBool   `json:"is_admin"`
+}
+
+func (q *Queries) AddUserQuery(ctx context.Context, arg AddUserQueryParams) error {
+	_, err := q.db.ExecContext(ctx, addUserQuery,
+		arg.Username,
+		arg.PasswordHash,
+		arg.Bio,
+		arg.FollowersCount,
+		arg.FollowingCount,
+		arg.IsAdmin,
+	)
+	return err
+}
+
+const deleteUserQuery = `-- name: DeleteUserQuery :exec
+DELETE FROM users WHERE id = $1
+`
+
+func (q *Queries) DeleteUserQuery(ctx context.Context, id int32) error {
+	_, err := q.db.ExecContext(ctx, deleteUserQuery, id)
+	return err
+}
+
+const getUserQuery = `-- name: GetUserQuery :one
+SELECT id, username, password_hash, bio, followers_count, following_count, is_admin, created_at, updated_at FROM users WHERE id = $1
+`
+
+func (q *Queries) GetUserQuery(ctx context.Context, id int32) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUserQuery, id)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.PasswordHash,
+		&i.Bio,
+		&i.FollowersCount,
+		&i.FollowingCount,
+		&i.IsAdmin,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getUsersQuery = `-- name: GetUsersQuery :many
 SELECT id, username, password_hash, bio, followers_count, following_count, is_admin, created_at, updated_at FROM users
 `
 
-func (q *Queries) GetUsers(ctx context.Context) ([]User, error) {
-	rows, err := q.db.QueryContext(ctx, getUsers)
+func (q *Queries) GetUsersQuery(ctx context.Context) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, getUsersQuery)
 	if err != nil {
 		return nil, err
 	}
@@ -44,4 +107,29 @@ func (q *Queries) GetUsers(ctx context.Context) ([]User, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateUserQuery = `-- name: UpdateUserQuery :exec
+UPDATE users SET password_hash = $2, bio = $3, followers_count = $4, following_count = $5, is_admin = $6 WHERE id = $1
+`
+
+type UpdateUserQueryParams struct {
+	ID             int32          `json:"id"`
+	PasswordHash   string         `json:"password_hash"`
+	Bio            sql.NullString `json:"bio"`
+	FollowersCount sql.NullInt32  `json:"followers_count"`
+	FollowingCount sql.NullInt32  `json:"following_count"`
+	IsAdmin        sql.NullBool   `json:"is_admin"`
+}
+
+func (q *Queries) UpdateUserQuery(ctx context.Context, arg UpdateUserQueryParams) error {
+	_, err := q.db.ExecContext(ctx, updateUserQuery,
+		arg.ID,
+		arg.PasswordHash,
+		arg.Bio,
+		arg.FollowersCount,
+		arg.FollowingCount,
+		arg.IsAdmin,
+	)
+	return err
 }
