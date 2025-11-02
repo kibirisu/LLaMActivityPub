@@ -49,11 +49,11 @@ build-frontend: $(NODE_MODULES)
 	@pnpm --prefix $(FRONTEND_DIR) build
 
 .PHONY: dev
-dev: dev-db
+dev:
 	@$(MAKE) -j2 dev-backend dev-frontend
 
 .PHONY: dev-backend
-dev-backend: setup build-frontend
+dev-backend: dev-db setup build-frontend
 	@echo Starting dev server...
 	@APP_ENV=dev DATABASE_URL=$(DEV_DB_URL) air $(AIR_ARGS)
 

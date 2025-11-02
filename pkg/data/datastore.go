@@ -1,4 +1,4 @@
-package datastore
+package data
 
 import "borg/pkg/db"
 
