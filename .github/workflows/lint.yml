@@ -9,6 +9,8 @@ on:
 jobs:
   lint-go:
     runs-on: ubuntu-latest
+    env:
+      GOEXPERIMENT: jsonv2
 
     steps:
       - name: Check if commit is a merge commit
