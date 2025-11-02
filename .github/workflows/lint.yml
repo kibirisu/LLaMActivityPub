@@ -79,7 +79,7 @@ jobs:
 
       - name: Format with biome
         working-directory: web
-        run: pnpm run format 
+        run: pnpm run format
 
       - name: Check with biome
         working-directory: web

@@ -33,11 +33,11 @@ $(NODE_MODULES): $(LOCKFILE) $(PACKAGE_JSON)
 	@pnpm --prefix $(FRONTEND_DIR) install --frozen-lockfile
 
 .PHONY: run
-run: build-backend 
+run: build-backend
 	$(BIN_DIR)/$(APP_NAME)
 
 .PHONY: build
-build: build-backend 
+build: build-backend
 
 .PHONY: build-backend
 build-backend: build-frontend
