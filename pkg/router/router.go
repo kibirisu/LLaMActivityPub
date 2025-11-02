@@ -16,16 +16,16 @@ type Router struct {
 	http.Handler
 	ds     data.DataStore
 	assets fs.FS
+	opts   json.Options
 }
 
-func NewRouter(appEnv string, q *db.Queries) *Router {
+func NewRouter(appEnv string, ds data.DataStore) *Router {
 	assets, err := web.GetAssets()
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	ds := data.NewDataStore(q)
-	r := &Router{ds: ds, assets: assets}
+	opts := data.GetOptions()
+	r := &Router{ds: ds, assets: assets, opts: opts}
 
 	h := http.NewServeMux()
 
@@ -40,7 +40,6 @@ func NewRouter(appEnv string, q *db.Queries) *Router {
 	h.HandleFunc("GET /api/{id}", r.handleGetUser)
 	h.HandleFunc("DELETE /api/{id}", r.handleDeleteUser)
 	h.HandleFunc("PUT /api/{id}", r.handleUpdateUser)
-	h.HandleFunc("/foo/", r.handleFoo)
 
 	r.Handler = h
 
@@ -57,7 +56,7 @@ func (h *Router) handleAssets(w http.ResponseWriter, r *http.Request) {
 
 func (h *Router) handleCreateUser(w http.ResponseWriter, r *http.Request) {
 	var user db.AddUserQueryParams
-	if err := json.UnmarshalRead(r.Body, &user); err != nil {
+	if err := json.UnmarshalRead(r.Body, &user, h.opts); err != nil {
 		log.Println(err)
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -77,12 +76,11 @@ func (h *Router) handleGetUsers(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	if err = json.MarshalWrite(w, &users); err != nil {
+	if err = json.MarshalWrite(w, &users, h.opts); err != nil {
 		log.Println(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
 }
 
 func (h *Router) handleGetUser(w http.ResponseWriter, r *http.Request) {
@@ -101,11 +99,10 @@ func (h *Router) handleGetUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	if err = json.MarshalWrite(w, &user); err != nil {
+	if err = json.MarshalWrite(w, &user, h.opts); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
 }
 
 func (h *Router) handleDeleteUser(w http.ResponseWriter, r *http.Request) {
@@ -138,7 +135,7 @@ func (h *Router) handleUpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var user db.UpdateUserQueryParams
-	if err = json.UnmarshalRead(r.Body, &user); err != nil || user.ID != int32(id) {
+	if err = json.UnmarshalRead(r.Body, &user, h.opts); err != nil || user.ID != int32(id) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -148,14 +145,4 @@ func (h *Router) handleUpdateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-}
-
-func (h *Router) handleFoo(w http.ResponseWriter, r *http.Request) {
-	var payload db.AddUserQueryParams
-	if err := json.UnmarshalRead(r.Body, &payload, data.WithUnmarshalers()); err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	json.MarshalWrite(w, payload, data.WithMarshalers())
 }
