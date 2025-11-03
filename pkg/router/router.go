@@ -9,6 +9,7 @@ import (
 	"borg/web"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 type Router struct {
@@ -17,7 +18,7 @@ type Router struct {
 	assets fs.FS
 }
 
-func NewRouter(appEnv string, ds data.DataStore) *Router {
+func NewRouter(ds data.DataStore) *Router {
 	assets, err := web.GetAssets()
 	if err != nil {
 		log.Fatal(err)
@@ -25,19 +26,16 @@ func NewRouter(appEnv string, ds data.DataStore) *Router {
 	r := &Router{ds: ds, assets: assets}
 
 	h := chi.NewRouter()
-
-	if appEnv == "prod" {
-		mux := http.NewServeMux()
-		mux.HandleFunc("/", r.handleRoot)
-		mux.HandleFunc("/static/", func(w http.ResponseWriter, req *http.Request) {
-			http.StripPrefix("/", http.HandlerFunc(r.handleAssets)).ServeHTTP(w, req)
-		})
-		h.Mount("/", mux)
-	}
-	h.Route("/api", r.addUserRoute)
+	h.Use(middleware.Logger)
+	h.Route("/", func(h chi.Router) {
+		h.Get("/*", r.handleRoot)
+		h.Get("/static/*", r.handleAssets)
+	})
+	h.Route("/api", func(h chi.Router) {
+		h.Route("/user", r.addUserRoute)
+	})
 
 	r.Handler = h
-
 	return r
 }
 

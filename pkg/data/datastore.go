@@ -2,16 +2,19 @@ package data
 
 import (
 	"context"
+	"encoding/json"
 
 	"borg/pkg/db"
 )
 
 type DataStore interface {
 	UserRepository
+	GetOpts() json.Options
 }
 
 type dataStore struct {
 	UserRepository
+	opts json.Options
 }
 
 func NewDataStore(ctx context.Context, url string) (DataStore, error) {
@@ -19,6 +22,11 @@ func NewDataStore(ctx context.Context, url string) (DataStore, error) {
 	if err != nil {
 		return nil, err
 	}
-	users := newUserRepository(q)
-	return &dataStore{users}, nil
+	ds := &dataStore{opts: getOptions()}
+	ds.UserRepository = newUserRepository(q)
+	return ds, nil
+}
+
+func (ds *dataStore) GetOpts() json.Options {
+	return ds.opts
 }

@@ -9,7 +9,7 @@ import (
 type Config struct {
 	AppEnv      string `mapstructure:"appenv"`
 	ListenPort  string `mapstructure:"listenport"`
-	DatabaseUrl string `mapstructure:"databaseurl"`
+	DatabaseURL string `mapstructure:"databaseurl"`
 }
 
 func GetConfig() *Config {
@@ -19,7 +19,7 @@ func GetConfig() *Config {
 	viper.SetDefault("DatabaseUrl", "postgres://postgres@localhost:5432/dev?sslmode=disable")
 	viper.RegisterAlias("AppEnv", "app_env")
 	viper.RegisterAlias("ListenPort", "listen_port")
-	viper.RegisterAlias("DatabaseUrl", "database_url")
+	viper.RegisterAlias("DatabaseURL", "database_url")
 	viper.SetConfigFile(".env")
 	viper.AutomaticEnv()
 

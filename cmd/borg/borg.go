@@ -14,11 +14,11 @@ func main() {
 	ctx := context.Background()
 	conf := config.GetConfig()
 
-	ds, err := data.NewDataStore(ctx, conf.DatabaseUrl)
+	ds, err := data.NewDataStore(ctx, conf.DatabaseURL)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	r := router.NewRouter(conf.AppEnv, ds)
+	r := router.NewRouter(ds)
 	http.ListenAndServe(":"+conf.ListenPort, r)
 }

@@ -36,6 +36,6 @@ func withUnmarshalers() json.Options {
 	return json.WithUnmarshalers(fn)
 }
 
-func GetOptions() json.Options {
+func getOptions() json.Options {
 	return json.JoinOptions(withMarshalers(), withUnmarshalers())
 }
