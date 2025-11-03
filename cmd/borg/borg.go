@@ -20,7 +20,5 @@ func main() {
 	}
 
 	r := router.NewRouter(conf.AppEnv, ds)
-	if err = http.ListenAndServe(":"+conf.ListenPort, r); err != nil {
-		log.Fatal(err)
-	}
+	http.ListenAndServe(":"+conf.ListenPort, r)
 }

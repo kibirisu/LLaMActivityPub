@@ -1,22 +1,20 @@
 package router
 
 import (
-	"encoding/json/v2" // experimental features
 	"io/fs"
 	"log"
 	"net/http"
-	"strconv"
 
 	"borg/pkg/data"
-	"borg/pkg/db"
 	"borg/web"
+
+	"github.com/go-chi/chi/v5"
 )
 
 type Router struct {
 	http.Handler
 	ds     data.DataStore
 	assets fs.FS
-	opts   json.Options
 }
 
 func NewRouter(appEnv string, ds data.DataStore) *Router {
@@ -24,22 +22,19 @@ func NewRouter(appEnv string, ds data.DataStore) *Router {
 	if err != nil {
 		log.Fatal(err)
 	}
-	opts := data.GetOptions()
-	r := &Router{ds: ds, assets: assets, opts: opts}
+	r := &Router{ds: ds, assets: assets}
 
-	h := http.NewServeMux()
+	h := chi.NewRouter()
 
 	if appEnv == "prod" {
-		h.HandleFunc("/", r.handleRoot)
-		h.HandleFunc("/static/", func(w http.ResponseWriter, req *http.Request) {
+		mux := http.NewServeMux()
+		mux.HandleFunc("/", r.handleRoot)
+		mux.HandleFunc("/static/", func(w http.ResponseWriter, req *http.Request) {
 			http.StripPrefix("/", http.HandlerFunc(r.handleAssets)).ServeHTTP(w, req)
 		})
+		h.Mount("/", mux)
 	}
-	h.HandleFunc("GET /api/", r.handleGetUsers)
-	h.HandleFunc("POST /api/", r.handleCreateUser)
-	h.HandleFunc("GET /api/{id}", r.handleGetUser)
-	h.HandleFunc("DELETE /api/{id}", r.handleDeleteUser)
-	h.HandleFunc("PUT /api/{id}", r.handleUpdateUser)
+	h.Route("/api", r.addUserRoute)
 
 	r.Handler = h
 
@@ -52,97 +47,4 @@ func (h *Router) handleRoot(w http.ResponseWriter, r *http.Request) {
 
 func (h *Router) handleAssets(w http.ResponseWriter, r *http.Request) {
 	http.FileServerFS(h.assets).ServeHTTP(w, r)
-}
-
-func (h *Router) handleCreateUser(w http.ResponseWriter, r *http.Request) {
-	var user db.AddUserQueryParams
-	if err := json.UnmarshalRead(r.Body, &user, h.opts); err != nil {
-		log.Println(err)
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	if err := h.ds.AddUser(r.Context(), user); err != nil {
-		log.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusCreated)
-}
-
-func (h *Router) handleGetUsers(w http.ResponseWriter, r *http.Request) {
-	users, err := h.ds.GetUsers(r.Context())
-	if err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	if err = json.MarshalWrite(w, &users, h.opts); err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-}
-
-func (h *Router) handleGetUser(w http.ResponseWriter, r *http.Request) {
-	idVal := r.PathValue("id")
-	if idVal == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	id, err := strconv.Atoi(idVal)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	user, err := h.ds.GetUser(r.Context(), int32(id))
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	if err = json.MarshalWrite(w, &user, h.opts); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-}
-
-func (h *Router) handleDeleteUser(w http.ResponseWriter, r *http.Request) {
-	idVal := r.PathValue("id")
-	if idVal == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	id, err := strconv.Atoi(idVal)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	if err = h.ds.DeleteUser(r.Context(), int32(id)); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-}
-
-func (h *Router) handleUpdateUser(w http.ResponseWriter, r *http.Request) {
-	idVal := r.PathValue("id")
-	if idVal == "" {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	id, err := strconv.Atoi(idVal)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	var user db.UpdateUserQueryParams
-	if err = json.UnmarshalRead(r.Body, &user, h.opts); err != nil || user.ID != int32(id) {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	if err = h.ds.UpdateUser(r.Context(), user); err != nil {
-		log.Println(err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
 }
