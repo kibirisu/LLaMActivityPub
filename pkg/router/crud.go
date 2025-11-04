@@ -17,6 +17,10 @@ type crudHandler[T any, C any, U any] struct {
 	opts json.Options
 }
 
+type contextKey string
+
+const keyID contextKey = contextKey("keyID")
+
 func newCrudHandler[T any, C any, U any](repo data.Repository[T, C, U], opts json.Options) *crudHandler[T, C, U] {
 	return &crudHandler[T, C, U]{repo: repo, opts: opts}
 }
