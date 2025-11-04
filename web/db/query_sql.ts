@@ -117,3 +117,104 @@ export async function deleteUser(sql: Sql, args: DeleteUserArgs): Promise<void> 
     await sql.unsafe(deleteUserQuery, [args.id]);
 }
 
+export const getPostsQuery = `-- name: GetPosts :many
+SELECT id, user_id, content, like_count, share_count, comment_count, created_at, updated_at FROM posts`;
+
+export interface GetPostsRow {
+    id: number;
+    userId: number;
+    content: string;
+    likeCount: number | null;
+    shareCount: number | null;
+    commentCount: number | null;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+}
+
+export async function getPosts(sql: Sql): Promise<GetPostsRow[]> {
+    return (await sql.unsafe(getPostsQuery, []).values()).map(row => ({
+        id: row[0],
+        userId: row[1],
+        content: row[2],
+        likeCount: row[3],
+        shareCount: row[4],
+        commentCount: row[5],
+        createdAt: row[6],
+        updatedAt: row[7]
+    }));
+}
+
+export const addPostQuery = `-- name: AddPost :exec
+INSERT INTO posts (user_id, content) VALUES ($1, $2)`;
+
+export interface AddPostArgs {
+    userId: number;
+    content: string;
+}
+
+export async function addPost(sql: Sql, args: AddPostArgs): Promise<void> {
+    await sql.unsafe(addPostQuery, [args.userId, args.content]);
+}
+
+export const getPostQuery = `-- name: GetPost :one
+SELECT id, user_id, content, like_count, share_count, comment_count, created_at, updated_at FROM posts WHERE id = $1`;
+
+export interface GetPostArgs {
+    id: number;
+}
+
+export interface GetPostRow {
+    id: number;
+    userId: number;
+    content: string;
+    likeCount: number | null;
+    shareCount: number | null;
+    commentCount: number | null;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+}
+
+export async function getPost(sql: Sql, args: GetPostArgs): Promise<GetPostRow | null> {
+    const rows = await sql.unsafe(getPostQuery, [args.id]).values();
+    if (rows.length !== 1) {
+        return null;
+    }
+    const row = rows[0];
+    return {
+        id: row[0],
+        userId: row[1],
+        content: row[2],
+        likeCount: row[3],
+        shareCount: row[4],
+        commentCount: row[5],
+        createdAt: row[6],
+        updatedAt: row[7]
+    };
+}
+
+export const updatePostQuery = `-- name: UpdatePost :exec
+UPDATE posts SET content = $2, like_count = $3, share_count = $4, comment_count = $5 WHERE id = $1`;
+
+export interface UpdatePostArgs {
+    id: number;
+    content: string;
+    likeCount: number | null;
+    shareCount: number | null;
+    commentCount: number | null;
+}
+
+export async function updatePost(sql: Sql, args: UpdatePostArgs): Promise<void> {
+    await sql.unsafe(updatePostQuery, [args.id, args.content, args.likeCount, args.shareCount, args.commentCount]);
+}
+
+export const deletePostQuery = `-- name: DeletePost :exec
+DELETE FROM posts WHERE id = $1`;
+
+export interface DeletePostArgs {
+    id: number;
+}
+
+export async function deletePost(sql: Sql, args: DeletePostArgs): Promise<void> {
+    await sql.unsafe(deletePostQuery, [args.id]);
+}
+

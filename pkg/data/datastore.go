@@ -9,10 +9,11 @@ import (
 
 type DataStore interface {
 	UserRepository() UserRepository
+	PostRepository() PostRepository
 	Opts() json.Options
 }
 
-type repository[T, C, U any] interface {
+type Repository[T, C, U any] interface {
 	Create(context.Context, C) error
 	GetByID(context.Context, int32) (T, error)
 	GetAll(context.Context) ([]T, error)
@@ -22,6 +23,7 @@ type repository[T, C, U any] interface {
 
 type dataStore struct {
 	users UserRepository
+	posts PostRepository
 	opts  json.Options
 }
 
@@ -30,12 +32,18 @@ func NewDataStore(ctx context.Context, url string) (DataStore, error) {
 	if err != nil {
 		return nil, err
 	}
-	ds := &dataStore{users: newUserRepository(q), opts: getOptions()}
+	ds := &dataStore{opts: getOptions()}
+	ds.users = newUserRepository(q)
+	ds.posts = newPostRepository(q)
 	return ds, nil
 }
 
 func (ds *dataStore) UserRepository() UserRepository {
 	return ds.users
+}
+
+func (ds *dataStore) PostRepository() PostRepository {
+	return ds.posts
 }
 
 func (ds *dataStore) Opts() json.Options {

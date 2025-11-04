@@ -7,7 +7,7 @@ import (
 )
 
 type UserRepository interface {
-	repository[db.User, db.AddUserParams, db.UpdateUserParams]
+	Repository[db.User, db.AddUserParams, db.UpdateUserParams]
 }
 
 type userRepository struct {

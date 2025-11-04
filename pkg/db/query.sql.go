@@ -10,6 +10,20 @@ import (
 	"database/sql"
 )
 
+const addPost = `-- name: AddPost :exec
+INSERT INTO posts (user_id, content) VALUES ($1, $2)
+`
+
+type AddPostParams struct {
+	UserID  int32  `json:"userId"`
+	Content string `json:"content"`
+}
+
+func (q *Queries) AddPost(ctx context.Context, arg AddPostParams) error {
+	_, err := q.db.ExecContext(ctx, addPost, arg.UserID, arg.Content)
+	return err
+}
+
 const addUser = `-- name: AddUser :exec
 INSERT INTO users (
   username,
@@ -42,6 +56,15 @@ func (q *Queries) AddUser(ctx context.Context, arg AddUserParams) error {
 	return err
 }
 
+const deletePost = `-- name: DeletePost :exec
+DELETE FROM posts WHERE id = $1
+`
+
+func (q *Queries) DeletePost(ctx context.Context, id int32) error {
+	_, err := q.db.ExecContext(ctx, deletePost, id)
+	return err
+}
+
 const deleteUser = `-- name: DeleteUser :exec
 DELETE FROM users WHERE id = $1
 `
@@ -49,6 +72,62 @@ DELETE FROM users WHERE id = $1
 func (q *Queries) DeleteUser(ctx context.Context, id int32) error {
 	_, err := q.db.ExecContext(ctx, deleteUser, id)
 	return err
+}
+
+const getPost = `-- name: GetPost :one
+SELECT id, user_id, content, like_count, share_count, comment_count, created_at, updated_at FROM posts WHERE id = $1
+`
+
+func (q *Queries) GetPost(ctx context.Context, id int32) (Post, error) {
+	row := q.db.QueryRowContext(ctx, getPost, id)
+	var i Post
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Content,
+		&i.LikeCount,
+		&i.ShareCount,
+		&i.CommentCount,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+	)
+	return i, err
+}
+
+const getPosts = `-- name: GetPosts :many
+SELECT id, user_id, content, like_count, share_count, comment_count, created_at, updated_at FROM posts
+`
+
+func (q *Queries) GetPosts(ctx context.Context) ([]Post, error) {
+	rows, err := q.db.QueryContext(ctx, getPosts)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Post
+	for rows.Next() {
+		var i Post
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Content,
+			&i.LikeCount,
+			&i.ShareCount,
+			&i.CommentCount,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getUser = `-- name: GetUser :one
@@ -107,6 +186,29 @@ func (q *Queries) GetUsers(ctx context.Context) ([]User, error) {
 		return nil, err
 	}
 	return items, nil
+}
+
+const updatePost = `-- name: UpdatePost :exec
+UPDATE posts SET content = $2, like_count = $3, share_count = $4, comment_count = $5 WHERE id = $1
+`
+
+type UpdatePostParams struct {
+	ID           int32         `json:"id"`
+	Content      string        `json:"content"`
+	LikeCount    sql.NullInt32 `json:"likeCount"`
+	ShareCount   sql.NullInt32 `json:"shareCount"`
+	CommentCount sql.NullInt32 `json:"commentCount"`
+}
+
+func (q *Queries) UpdatePost(ctx context.Context, arg UpdatePostParams) error {
+	_, err := q.db.ExecContext(ctx, updatePost,
+		arg.ID,
+		arg.Content,
+		arg.LikeCount,
+		arg.ShareCount,
+		arg.CommentCount,
+	)
+	return err
 }
 
 const updateUser = `-- name: UpdateUser :exec
