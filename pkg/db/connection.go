@@ -14,19 +14,17 @@ func GetDB(ctx context.Context, url string) (*Queries, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Println("✅ Connected to DB")
 
 	// Run database migrations
 	goose.SetBaseFS(getMigrations())
-
 	driver := "postgres"
 	if err := goose.SetDialect(driver); err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-
 	if err := goose.Up(pool, "migrations"); err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 
+	log.Println("✅ Connected to DB")
 	return New(pool), nil
 }

@@ -33,7 +33,9 @@ func NewRouter(ds data.DataStore) *Router {
 		h.Get("/static/*", r.handleAssets)
 	})
 	h.Route("/api", func(h chi.Router) {
-		h.Route("/user", r.handleUserRoutes)
+		h.Route("/user", r.userRoute)
+		h.Route("/post", r.postRoute)
+		// ...
 	})
 
 	r.Handler = h
@@ -47,3 +49,15 @@ func (h *Router) handleRoot(w http.ResponseWriter, r *http.Request) {
 func (h *Router) handleAssets(w http.ResponseWriter, r *http.Request) {
 	http.FileServerFS(h.assets).ServeHTTP(w, r)
 }
+
+func (h *Router) userRoute(r chi.Router) {
+	crud := newCrudHandler(h.ds.UserRepository(), h.ds.Opts())
+	crud.registerRoutes(r)
+}
+
+func (h *Router) postRoute(r chi.Router) {
+	crud := newCrudHandler(h.ds.PostRepository(), h.ds.Opts())
+	crud.registerRoutes(r)
+}
+
+// ...
