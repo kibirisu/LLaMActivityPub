@@ -27,6 +27,7 @@ func NewRouter(ds data.DataStore) *Router {
 
 	h := chi.NewRouter()
 	h.Use(middleware.Logger)
+	h.Use(middleware.Recoverer)
 	h.Route("/", func(h chi.Router) {
 		h.Get("/*", r.handleRoot)
 		h.Get("/static/*", r.handleAssets)

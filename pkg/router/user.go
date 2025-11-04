@@ -49,15 +49,17 @@ func createUser(ds data.DataStore) http.HandlerFunc {
 		var user db.AddUserQueryParams
 		if err := json.UnmarshalRead(r.Body, &user, ds.GetOpts()); err != nil {
 			log.Println(err)
-			w.WriteHeader(http.StatusBadRequest)
+			_ = writeError(w, err, http.StatusBadRequest)
 			return
 		}
 		if err := ds.AddUser(r.Context(), user); err != nil {
 			log.Println(err)
-			w.WriteHeader(http.StatusInternalServerError)
+			_ = writeError(w, err, http.StatusInternalServerError)
 			return
 		}
-		w.WriteHeader(http.StatusCreated)
+		if err := writeSuccess(w, &user, http.StatusCreated, ds.GetOpts()); err != nil {
+			log.Println(err)
+		}
 	}
 }
 
@@ -66,13 +68,11 @@ func getUsers(ds data.DataStore) http.HandlerFunc {
 		users, err := ds.GetUsers(r.Context())
 		if err != nil {
 			log.Println(err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			_ = writeError(w, err, http.StatusInternalServerError)
 			return
 		}
-		if err = json.MarshalWrite(w, &users, ds.GetOpts()); err != nil {
+		if err = writeSuccess(w, &users, http.StatusOK, ds.GetOpts()); err != nil {
 			log.Println(err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
 		}
 	}
 }
@@ -82,12 +82,12 @@ func getUser(ds data.DataStore) http.HandlerFunc {
 		id := r.Context().Value(keyID).(int32)
 		user, err := ds.GetUser(r.Context(), id)
 		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			log.Println(err)
+			_ = writeError(w, err, http.StatusInternalServerError)
 			return
 		}
-		if err = json.MarshalWrite(w, &user, ds.GetOpts()); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+		if err = writeSuccess(w, &user, http.StatusOK, ds.GetOpts()); err != nil {
+			log.Println(err)
 		}
 	}
 }
@@ -96,10 +96,13 @@ func deleteUser(ds data.DataStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.Context().Value(keyID).(int32)
 		if err := ds.DeleteUser(r.Context(), id); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			log.Println(err)
+			_ = writeError(w, err, http.StatusInternalServerError)
 			return
 		}
-		w.WriteHeader(http.StatusOK)
+		if err := writeSuccess(w, id, http.StatusOK); err != nil {
+			log.Println(err)
+		}
 	}
 }
 
@@ -107,15 +110,16 @@ func updateUser(ds data.DataStore) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var user db.UpdateUserQueryParams
 		id := r.Context().Value(keyID).(int32)
-		if err := json.UnmarshalRead(r.Body, &user, ds.GetOpts()); err != nil || user.ID != int32(id) {
-			w.WriteHeader(http.StatusBadRequest)
+		opts := ds.GetOpts()
+		if err := json.UnmarshalRead(r.Body, &user, opts); err != nil || user.ID != int32(id) {
+			_ = writeError(w, err, http.StatusBadRequest)
 			return
 		}
 		if err := ds.UpdateUser(r.Context(), user); err != nil {
 			log.Println(err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			_ = writeError(w, err, http.StatusInternalServerError)
 			return
 		}
-		w.WriteHeader(http.StatusOK)
+		writeSuccess(w, &user, http.StatusOK, opts)
 	}
 }
