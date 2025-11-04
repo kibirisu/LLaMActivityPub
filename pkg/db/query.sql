@@ -1,7 +1,7 @@
--- name: GetUsersQuery :many
+-- name: GetUsers :many
 SELECT * FROM users;
 
--- name: AddUserQuery :exec
+-- name: AddUser :exec
 INSERT INTO users (
   username,
   password_hash,
@@ -11,11 +11,11 @@ INSERT INTO users (
   is_admin
 ) VALUES ($1, $2, $3, $4, $5, $6);
 
--- name: GetUserQuery :one
+-- name: GetUser :one
 SELECT * FROM users WHERE id = $1;
 
--- name: UpdateUserQuery :exec
+-- name: UpdateUser :exec
 UPDATE users SET password_hash = $2, bio = $3, followers_count = $4, following_count = $5, is_admin = $6 WHERE id = $1;
 
--- name: DeleteUserQuery :exec
+-- name: DeleteUser :exec
 DELETE FROM users WHERE id = $1;

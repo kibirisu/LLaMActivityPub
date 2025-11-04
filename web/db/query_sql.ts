@@ -1,9 +1,9 @@
 import { Sql } from "postgres";
 
-export const getUsersQueryQuery = `-- name: GetUsersQuery :many
+export const getUsersQuery = `-- name: GetUsers :many
 SELECT id, username, password_hash, bio, followers_count, following_count, is_admin, created_at, updated_at FROM users`;
 
-export interface GetUsersQueryRow {
+export interface GetUsersRow {
     id: number;
     username: string;
     passwordHash: string;
@@ -15,8 +15,8 @@ export interface GetUsersQueryRow {
     updatedAt: Date | null;
 }
 
-export async function getUsersQuery(sql: Sql): Promise<GetUsersQueryRow[]> {
-    return (await sql.unsafe(getUsersQueryQuery, []).values()).map(row => ({
+export async function getUsers(sql: Sql): Promise<GetUsersRow[]> {
+    return (await sql.unsafe(getUsersQuery, []).values()).map(row => ({
         id: row[0],
         username: row[1],
         passwordHash: row[2],
@@ -29,7 +29,7 @@ export async function getUsersQuery(sql: Sql): Promise<GetUsersQueryRow[]> {
     }));
 }
 
-export const addUserQueryQuery = `-- name: AddUserQuery :exec
+export const addUserQuery = `-- name: AddUser :exec
 INSERT INTO users (
   username,
   password_hash,
@@ -39,7 +39,7 @@ INSERT INTO users (
   is_admin
 ) VALUES ($1, $2, $3, $4, $5, $6)`;
 
-export interface AddUserQueryArgs {
+export interface AddUserArgs {
     username: string;
     passwordHash: string;
     bio: string | null;
@@ -48,18 +48,18 @@ export interface AddUserQueryArgs {
     isAdmin: boolean | null;
 }
 
-export async function addUserQuery(sql: Sql, args: AddUserQueryArgs): Promise<void> {
-    await sql.unsafe(addUserQueryQuery, [args.username, args.passwordHash, args.bio, args.followersCount, args.followingCount, args.isAdmin]);
+export async function addUser(sql: Sql, args: AddUserArgs): Promise<void> {
+    await sql.unsafe(addUserQuery, [args.username, args.passwordHash, args.bio, args.followersCount, args.followingCount, args.isAdmin]);
 }
 
-export const getUserQueryQuery = `-- name: GetUserQuery :one
+export const getUserQuery = `-- name: GetUser :one
 SELECT id, username, password_hash, bio, followers_count, following_count, is_admin, created_at, updated_at FROM users WHERE id = $1`;
 
-export interface GetUserQueryArgs {
+export interface GetUserArgs {
     id: number;
 }
 
-export interface GetUserQueryRow {
+export interface GetUserRow {
     id: number;
     username: string;
     passwordHash: string;
@@ -71,8 +71,8 @@ export interface GetUserQueryRow {
     updatedAt: Date | null;
 }
 
-export async function getUserQuery(sql: Sql, args: GetUserQueryArgs): Promise<GetUserQueryRow | null> {
-    const rows = await sql.unsafe(getUserQueryQuery, [args.id]).values();
+export async function getUser(sql: Sql, args: GetUserArgs): Promise<GetUserRow | null> {
+    const rows = await sql.unsafe(getUserQuery, [args.id]).values();
     if (rows.length !== 1) {
         return null;
     }
@@ -90,10 +90,10 @@ export async function getUserQuery(sql: Sql, args: GetUserQueryArgs): Promise<Ge
     };
 }
 
-export const updateUserQueryQuery = `-- name: UpdateUserQuery :exec
+export const updateUserQuery = `-- name: UpdateUser :exec
 UPDATE users SET password_hash = $2, bio = $3, followers_count = $4, following_count = $5, is_admin = $6 WHERE id = $1`;
 
-export interface UpdateUserQueryArgs {
+export interface UpdateUserArgs {
     id: number;
     passwordHash: string;
     bio: string | null;
@@ -102,18 +102,18 @@ export interface UpdateUserQueryArgs {
     isAdmin: boolean | null;
 }
 
-export async function updateUserQuery(sql: Sql, args: UpdateUserQueryArgs): Promise<void> {
-    await sql.unsafe(updateUserQueryQuery, [args.id, args.passwordHash, args.bio, args.followersCount, args.followingCount, args.isAdmin]);
+export async function updateUser(sql: Sql, args: UpdateUserArgs): Promise<void> {
+    await sql.unsafe(updateUserQuery, [args.id, args.passwordHash, args.bio, args.followersCount, args.followingCount, args.isAdmin]);
 }
 
-export const deleteUserQueryQuery = `-- name: DeleteUserQuery :exec
+export const deleteUserQuery = `-- name: DeleteUser :exec
 DELETE FROM users WHERE id = $1`;
 
-export interface DeleteUserQueryArgs {
+export interface DeleteUserArgs {
     id: number;
 }
 
-export async function deleteUserQuery(sql: Sql, args: DeleteUserQueryArgs): Promise<void> {
-    await sql.unsafe(deleteUserQueryQuery, [args.id]);
+export async function deleteUser(sql: Sql, args: DeleteUserArgs): Promise<void> {
+    await sql.unsafe(deleteUserQuery, [args.id]);
 }
 

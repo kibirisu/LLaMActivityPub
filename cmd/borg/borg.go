@@ -20,5 +20,5 @@ func main() {
 	}
 
 	r := router.NewRouter(ds)
-	http.ListenAndServe(":"+conf.ListenPort, r)
+	_ = http.ListenAndServe(":"+conf.ListenPort, r)
 }

@@ -7,11 +7,7 @@ import (
 )
 
 type UserRepository interface {
-	AddUser(context.Context, db.AddUserQueryParams) error
-	GetUsers(context.Context) ([]db.User, error)
-	GetUser(context.Context, int32) (db.User, error)
-	DeleteUser(context.Context, int32) error
-	UpdateUser(context.Context, db.UpdateUserQueryParams) error
+	repository[db.User, db.AddUserParams, db.UpdateUserParams]
 }
 
 type userRepository struct {
@@ -22,22 +18,22 @@ func newUserRepository(q *db.Queries) UserRepository {
 	return &userRepository{q}
 }
 
-func (r *userRepository) AddUser(ctx context.Context, user db.AddUserQueryParams) error {
-	return r.AddUserQuery(ctx, user)
+func (r *userRepository) Create(ctx context.Context, user db.AddUserParams) error {
+	return r.AddUser(ctx, user)
 }
 
-func (r *userRepository) GetUsers(ctx context.Context) ([]db.User, error) {
-	return r.GetUsersQuery(ctx)
+func (r *userRepository) GetByID(ctx context.Context, id int32) (db.User, error) {
+	return r.GetUser(ctx, id)
 }
 
-func (r *userRepository) GetUser(ctx context.Context, id int32) (db.User, error) {
-	return r.GetUserQuery(ctx, id)
+func (r *userRepository) GetAll(ctx context.Context) ([]db.User, error) {
+	return r.GetUsers(ctx)
 }
 
-func (r *userRepository) DeleteUser(ctx context.Context, id int32) error {
-	return r.DeleteUserQuery(ctx, id)
+func (r *userRepository) Update(ctx context.Context, user db.UpdateUserParams) error {
+	return r.UpdateUser(ctx, user)
 }
 
-func (r *userRepository) UpdateUser(ctx context.Context, user db.UpdateUserQueryParams) error {
-	return r.UpdateUserQuery(ctx, user)
+func (r *userRepository) Delete(ctx context.Context, id int32) error {
+	return r.DeleteUser(ctx, id)
 }

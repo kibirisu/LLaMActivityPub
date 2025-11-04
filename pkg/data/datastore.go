@@ -8,13 +8,21 @@ import (
 )
 
 type DataStore interface {
-	UserRepository
-	GetOpts() json.Options
+	UserRepository() UserRepository
+	Opts() json.Options
+}
+
+type repository[T, C, U any] interface {
+	Create(context.Context, C) error
+	GetByID(context.Context, int32) (T, error)
+	GetAll(context.Context) ([]T, error)
+	Update(context.Context, U) error
+	Delete(context.Context, int32) error
 }
 
 type dataStore struct {
-	UserRepository
-	opts json.Options
+	users UserRepository
+	opts  json.Options
 }
 
 func NewDataStore(ctx context.Context, url string) (DataStore, error) {
@@ -22,11 +30,14 @@ func NewDataStore(ctx context.Context, url string) (DataStore, error) {
 	if err != nil {
 		return nil, err
 	}
-	ds := &dataStore{opts: getOptions()}
-	ds.UserRepository = newUserRepository(q)
+	ds := &dataStore{users: newUserRepository(q), opts: getOptions()}
 	return ds, nil
 }
 
-func (ds *dataStore) GetOpts() json.Options {
+func (ds *dataStore) UserRepository() UserRepository {
+	return ds.users
+}
+
+func (ds *dataStore) Opts() json.Options {
 	return ds.opts
 }

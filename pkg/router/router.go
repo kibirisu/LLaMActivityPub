@@ -33,7 +33,7 @@ func NewRouter(ds data.DataStore) *Router {
 		h.Get("/static/*", r.handleAssets)
 	})
 	h.Route("/api", func(h chi.Router) {
-		h.Route("/user", r.addUserRoute)
+		h.Route("/user", r.handleUserRoutes)
 	})
 
 	r.Handler = h

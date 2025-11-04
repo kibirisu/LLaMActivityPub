@@ -10,7 +10,7 @@ import (
 	"database/sql"
 )
 
-const addUserQuery = `-- name: AddUserQuery :exec
+const addUser = `-- name: AddUser :exec
 INSERT INTO users (
   username,
   password_hash,
@@ -21,7 +21,7 @@ INSERT INTO users (
 ) VALUES ($1, $2, $3, $4, $5, $6)
 `
 
-type AddUserQueryParams struct {
+type AddUserParams struct {
 	Username       string         `json:"username"`
 	PasswordHash   string         `json:"passwordHash"`
 	Bio            sql.NullString `json:"bio"`
@@ -30,8 +30,8 @@ type AddUserQueryParams struct {
 	IsAdmin        sql.NullBool   `json:"isAdmin"`
 }
 
-func (q *Queries) AddUserQuery(ctx context.Context, arg AddUserQueryParams) error {
-	_, err := q.db.ExecContext(ctx, addUserQuery,
+func (q *Queries) AddUser(ctx context.Context, arg AddUserParams) error {
+	_, err := q.db.ExecContext(ctx, addUser,
 		arg.Username,
 		arg.PasswordHash,
 		arg.Bio,
@@ -42,21 +42,21 @@ func (q *Queries) AddUserQuery(ctx context.Context, arg AddUserQueryParams) erro
 	return err
 }
 
-const deleteUserQuery = `-- name: DeleteUserQuery :exec
+const deleteUser = `-- name: DeleteUser :exec
 DELETE FROM users WHERE id = $1
 `
 
-func (q *Queries) DeleteUserQuery(ctx context.Context, id int32) error {
-	_, err := q.db.ExecContext(ctx, deleteUserQuery, id)
+func (q *Queries) DeleteUser(ctx context.Context, id int32) error {
+	_, err := q.db.ExecContext(ctx, deleteUser, id)
 	return err
 }
 
-const getUserQuery = `-- name: GetUserQuery :one
+const getUser = `-- name: GetUser :one
 SELECT id, username, password_hash, bio, followers_count, following_count, is_admin, created_at, updated_at FROM users WHERE id = $1
 `
 
-func (q *Queries) GetUserQuery(ctx context.Context, id int32) (User, error) {
-	row := q.db.QueryRowContext(ctx, getUserQuery, id)
+func (q *Queries) GetUser(ctx context.Context, id int32) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUser, id)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -72,12 +72,12 @@ func (q *Queries) GetUserQuery(ctx context.Context, id int32) (User, error) {
 	return i, err
 }
 
-const getUsersQuery = `-- name: GetUsersQuery :many
+const getUsers = `-- name: GetUsers :many
 SELECT id, username, password_hash, bio, followers_count, following_count, is_admin, created_at, updated_at FROM users
 `
 
-func (q *Queries) GetUsersQuery(ctx context.Context) ([]User, error) {
-	rows, err := q.db.QueryContext(ctx, getUsersQuery)
+func (q *Queries) GetUsers(ctx context.Context) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, getUsers)
 	if err != nil {
 		return nil, err
 	}
@@ -109,11 +109,11 @@ func (q *Queries) GetUsersQuery(ctx context.Context) ([]User, error) {
 	return items, nil
 }
 
-const updateUserQuery = `-- name: UpdateUserQuery :exec
+const updateUser = `-- name: UpdateUser :exec
 UPDATE users SET password_hash = $2, bio = $3, followers_count = $4, following_count = $5, is_admin = $6 WHERE id = $1
 `
 
-type UpdateUserQueryParams struct {
+type UpdateUserParams struct {
 	ID             int32          `json:"id"`
 	PasswordHash   string         `json:"passwordHash"`
 	Bio            sql.NullString `json:"bio"`
@@ -122,8 +122,8 @@ type UpdateUserQueryParams struct {
 	IsAdmin        sql.NullBool   `json:"isAdmin"`
 }
 
-func (q *Queries) UpdateUserQuery(ctx context.Context, arg UpdateUserQueryParams) error {
-	_, err := q.db.ExecContext(ctx, updateUserQuery,
+func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) error {
+	_, err := q.db.ExecContext(ctx, updateUser,
 		arg.ID,
 		arg.PasswordHash,
 		arg.Bio,
