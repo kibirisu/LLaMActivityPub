@@ -26,10 +26,6 @@ func (r *userRepository) GetByID(ctx context.Context, id int32) (db.User, error)
 	return r.GetUser(ctx, id)
 }
 
-func (r *userRepository) GetAll(ctx context.Context) ([]db.User, error) {
-	return r.GetUsers(ctx)
-}
-
 func (r *userRepository) Update(ctx context.Context, user db.UpdateUserParams) error {
 	return r.UpdateUser(ctx, user)
 }

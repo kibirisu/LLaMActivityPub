@@ -14,17 +14,24 @@ INSERT INTO users (
 -- name: GetUser :one
 SELECT * FROM users WHERE id = $1;
 
+-- name: GetFollowedUsers :many
+SELECT f.following_id FROM users u JOIN followers f ON u.id = f.follower_id WHERE u.id = $1;
+
 -- name: UpdateUser :exec
 UPDATE users SET password_hash = $2, bio = $3, followers_count = $4, following_count = $5, is_admin = $6 WHERE id = $1;
 
 -- name: DeleteUser :exec
 DELETE FROM users WHERE id = $1;
 
+
 -- name: GetPosts :many
 SELECT * FROM posts;
 
 -- name: AddPost :exec
 INSERT INTO posts (user_id, content) VALUES ($1, $2);
+
+-- name: GetPostsByUserID :many
+SELECT * FROM posts WHERE user_id = $1;
 
 -- name: GetPost :one
 SELECT * FROM posts WHERE id = $1;
@@ -34,3 +41,41 @@ UPDATE posts SET content = $2, like_count = $3, share_count = $4, comment_count 
 
 -- name: DeletePost :exec
 DELETE FROM posts WHERE id = $1;
+
+
+-- name: GetLikes :many
+SELECT * FROM likes;
+
+-- name: AddLike :exec
+INSERT INTO likes (post_id, user_id) VALUES ($1, $2);
+
+-- name: GetLikeByID :one
+SELECT * FROM likes WHERE id = $1;
+
+-- name: GetLikesByPostID :many
+SELECT * FROM likes WHERE post_id = $1;
+
+-- name: GetLikesByUserID :many
+SELECT * FROM likes WHERE user_id = $1;
+
+-- name: DeleteLike :exec
+DELETE FROM likes WHERE id = $1;
+
+
+-- name: GetShares :many
+SELECT * FROM shares;
+
+-- name: AddShare :exec
+INSERT INTO shares (post_id, user_id) VALUES ($1, $2);
+
+-- name: GetShareByID :one
+SELECT * FROM shares WHERE id = $1;
+
+-- name: GetSharesByPostID :many
+SELECT * FROM shares WHERE post_id = $1;
+
+-- name: GetShareByUserID :many
+SELECT * FROM shares WHERE user_id = $1;
+
+-- name: DeleteShare :exec
+DELETE FROM shares WHERE id = $1;

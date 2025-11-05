@@ -8,6 +8,7 @@ import (
 
 type PostRepository interface {
 	Repository[db.Post, db.AddPostParams, db.UpdatePostParams]
+	IdentifiedByUser[db.Post]
 }
 
 type postRepository struct {
@@ -26,14 +27,14 @@ func (r *postRepository) Delete(ctx context.Context, id int32) error {
 	return r.DeletePost(ctx, id)
 }
 
-func (r *postRepository) GetAll(ctx context.Context) ([]db.Post, error) {
-	return r.GetPosts(ctx)
-}
-
 func (r *postRepository) GetByID(ctx context.Context, id int32) (db.Post, error) {
 	return r.GetPost(ctx, id)
 }
 
 func (r *postRepository) Update(ctx context.Context, post db.UpdatePostParams) error {
 	return r.UpdatePost(ctx, post)
+}
+
+func (r *postRepository) GetByUserID(ctx context.Context, id int32) ([]db.Post, error) {
+	return r.GetPostsByUserID(ctx, id)
 }

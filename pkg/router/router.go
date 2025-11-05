@@ -32,11 +32,7 @@ func NewRouter(ds data.DataStore) *Router {
 		h.Get("/*", r.handleRoot)
 		h.Get("/static/*", r.handleAssets)
 	})
-	h.Route("/api", func(h chi.Router) {
-		h.Route("/user", r.userRoute)
-		h.Route("/post", r.postRoute)
-		// ...
-	})
+	h.Mount("/api", r.apiRouter())
 
 	r.Handler = h
 	return r
@@ -50,14 +46,40 @@ func (h *Router) handleAssets(w http.ResponseWriter, r *http.Request) {
 	http.FileServerFS(h.assets).ServeHTTP(w, r)
 }
 
-func (h *Router) userRoute(r chi.Router) {
-	crud := newCrudHandler(h.ds.UserRepository(), h.ds.Opts())
-	crud.registerRoutes(r)
+func (h *Router) apiRouter() http.Handler {
+	r := chi.NewRouter()
+	r.Mount("/user", h.userRouter())
+	r.Mount("/post", h.postRouter())
+	return r
 }
 
-func (h *Router) postRoute(r chi.Router) {
-	crud := newCrudHandler(h.ds.PostRepository(), h.ds.Opts())
-	crud.registerRoutes(r)
+func (h *Router) userRouter() http.Handler {
+	repo, opts := h.ds.UserRepository(), h.ds.Opts()
+	r := chi.NewRouter()
+	r.Post("/", create(repo, opts))
+	r.Put("/", update(repo, opts))
+	r.Route("/{id}", func(r chi.Router) {
+		r.Use(idCtx)
+		r.Get("/", getByID(repo, opts))
+		r.Delete("/", delete(repo))
+	})
+	r.With(idCtx).Get("/{id}/posts", getByUserID(h.ds.PostRepository(), opts))
+	r.With(idCtx).Get("/{id}/shares", getByUserID(h.ds.ShareRepository(), opts))
+	r.With(idCtx).Get("/{id}/likes", getByUserID(h.ds.LikeRepository(), opts))
+	return r
 }
 
-// ...
+func (h *Router) postRouter() http.Handler {
+	repo, opts := h.ds.PostRepository(), h.ds.Opts()
+	r := chi.NewRouter()
+	r.Post("/", create(repo, opts))
+	r.Put("/", update(repo, opts))
+	r.Route("/{id}", func(r chi.Router) {
+		r.Use(idCtx)
+		r.Get("/", getByID(repo, opts))
+		r.Delete("/", delete(repo))
+	})
+	r.With(idCtx).Get("/{id}/shares", getByPostID(h.ds.ShareRepository(), opts))
+	r.With(idCtx).Get("/{id}/likes", getByPostID(h.ds.LikeRepository(), opts))
+	return r
+}

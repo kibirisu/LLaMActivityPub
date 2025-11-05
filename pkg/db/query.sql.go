@@ -10,6 +10,20 @@ import (
 	"database/sql"
 )
 
+const addLike = `-- name: AddLike :exec
+INSERT INTO likes (post_id, user_id) VALUES ($1, $2)
+`
+
+type AddLikeParams struct {
+	PostID int32 `json:"postId"`
+	UserID int32 `json:"userId"`
+}
+
+func (q *Queries) AddLike(ctx context.Context, arg AddLikeParams) error {
+	_, err := q.db.ExecContext(ctx, addLike, arg.PostID, arg.UserID)
+	return err
+}
+
 const addPost = `-- name: AddPost :exec
 INSERT INTO posts (user_id, content) VALUES ($1, $2)
 `
@@ -21,6 +35,20 @@ type AddPostParams struct {
 
 func (q *Queries) AddPost(ctx context.Context, arg AddPostParams) error {
 	_, err := q.db.ExecContext(ctx, addPost, arg.UserID, arg.Content)
+	return err
+}
+
+const addShare = `-- name: AddShare :exec
+INSERT INTO shares (post_id, user_id) VALUES ($1, $2)
+`
+
+type AddShareParams struct {
+	PostID int32 `json:"postId"`
+	UserID int32 `json:"userId"`
+}
+
+func (q *Queries) AddShare(ctx context.Context, arg AddShareParams) error {
+	_, err := q.db.ExecContext(ctx, addShare, arg.PostID, arg.UserID)
 	return err
 }
 
@@ -56,12 +84,30 @@ func (q *Queries) AddUser(ctx context.Context, arg AddUserParams) error {
 	return err
 }
 
+const deleteLike = `-- name: DeleteLike :exec
+DELETE FROM likes WHERE id = $1
+`
+
+func (q *Queries) DeleteLike(ctx context.Context, id int32) error {
+	_, err := q.db.ExecContext(ctx, deleteLike, id)
+	return err
+}
+
 const deletePost = `-- name: DeletePost :exec
 DELETE FROM posts WHERE id = $1
 `
 
 func (q *Queries) DeletePost(ctx context.Context, id int32) error {
 	_, err := q.db.ExecContext(ctx, deletePost, id)
+	return err
+}
+
+const deleteShare = `-- name: DeleteShare :exec
+DELETE FROM shares WHERE id = $1
+`
+
+func (q *Queries) DeleteShare(ctx context.Context, id int32) error {
+	_, err := q.db.ExecContext(ctx, deleteShare, id)
 	return err
 }
 
@@ -72,6 +118,145 @@ DELETE FROM users WHERE id = $1
 func (q *Queries) DeleteUser(ctx context.Context, id int32) error {
 	_, err := q.db.ExecContext(ctx, deleteUser, id)
 	return err
+}
+
+const getFollowedUsers = `-- name: GetFollowedUsers :many
+SELECT f.following_id FROM users u JOIN followers f ON u.id = f.follower_id WHERE u.id = $1
+`
+
+func (q *Queries) GetFollowedUsers(ctx context.Context, id int32) ([]int32, error) {
+	rows, err := q.db.QueryContext(ctx, getFollowedUsers, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int32
+	for rows.Next() {
+		var following_id int32
+		if err := rows.Scan(&following_id); err != nil {
+			return nil, err
+		}
+		items = append(items, following_id)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getLikeByID = `-- name: GetLikeByID :one
+SELECT id, post_id, user_id, created_at FROM likes WHERE id = $1
+`
+
+func (q *Queries) GetLikeByID(ctx context.Context, id int32) (Like, error) {
+	row := q.db.QueryRowContext(ctx, getLikeByID, id)
+	var i Like
+	err := row.Scan(
+		&i.ID,
+		&i.PostID,
+		&i.UserID,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getLikes = `-- name: GetLikes :many
+SELECT id, post_id, user_id, created_at FROM likes
+`
+
+func (q *Queries) GetLikes(ctx context.Context) ([]Like, error) {
+	rows, err := q.db.QueryContext(ctx, getLikes)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Like
+	for rows.Next() {
+		var i Like
+		if err := rows.Scan(
+			&i.ID,
+			&i.PostID,
+			&i.UserID,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getLikesByPostID = `-- name: GetLikesByPostID :many
+SELECT id, post_id, user_id, created_at FROM likes WHERE post_id = $1
+`
+
+func (q *Queries) GetLikesByPostID(ctx context.Context, postID int32) ([]Like, error) {
+	rows, err := q.db.QueryContext(ctx, getLikesByPostID, postID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Like
+	for rows.Next() {
+		var i Like
+		if err := rows.Scan(
+			&i.ID,
+			&i.PostID,
+			&i.UserID,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getLikesByUserID = `-- name: GetLikesByUserID :many
+SELECT id, post_id, user_id, created_at FROM likes WHERE user_id = $1
+`
+
+func (q *Queries) GetLikesByUserID(ctx context.Context, userID int32) ([]Like, error) {
+	rows, err := q.db.QueryContext(ctx, getLikesByUserID, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Like
+	for rows.Next() {
+		var i Like
+		if err := rows.Scan(
+			&i.ID,
+			&i.PostID,
+			&i.UserID,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getPost = `-- name: GetPost :one
@@ -116,6 +301,154 @@ func (q *Queries) GetPosts(ctx context.Context) ([]Post, error) {
 			&i.CommentCount,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPostsByUserID = `-- name: GetPostsByUserID :many
+SELECT id, user_id, content, like_count, share_count, comment_count, created_at, updated_at FROM posts WHERE user_id = $1
+`
+
+func (q *Queries) GetPostsByUserID(ctx context.Context, userID int32) ([]Post, error) {
+	rows, err := q.db.QueryContext(ctx, getPostsByUserID, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Post
+	for rows.Next() {
+		var i Post
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Content,
+			&i.LikeCount,
+			&i.ShareCount,
+			&i.CommentCount,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getShareByID = `-- name: GetShareByID :one
+SELECT id, post_id, user_id, created_at FROM shares WHERE id = $1
+`
+
+func (q *Queries) GetShareByID(ctx context.Context, id int32) (Share, error) {
+	row := q.db.QueryRowContext(ctx, getShareByID, id)
+	var i Share
+	err := row.Scan(
+		&i.ID,
+		&i.PostID,
+		&i.UserID,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const getShareByUserID = `-- name: GetShareByUserID :many
+SELECT id, post_id, user_id, created_at FROM shares WHERE user_id = $1
+`
+
+func (q *Queries) GetShareByUserID(ctx context.Context, userID int32) ([]Share, error) {
+	rows, err := q.db.QueryContext(ctx, getShareByUserID, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Share
+	for rows.Next() {
+		var i Share
+		if err := rows.Scan(
+			&i.ID,
+			&i.PostID,
+			&i.UserID,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getShares = `-- name: GetShares :many
+SELECT id, post_id, user_id, created_at FROM shares
+`
+
+func (q *Queries) GetShares(ctx context.Context) ([]Share, error) {
+	rows, err := q.db.QueryContext(ctx, getShares)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Share
+	for rows.Next() {
+		var i Share
+		if err := rows.Scan(
+			&i.ID,
+			&i.PostID,
+			&i.UserID,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getSharesByPostID = `-- name: GetSharesByPostID :many
+SELECT id, post_id, user_id, created_at FROM shares WHERE post_id = $1
+`
+
+func (q *Queries) GetSharesByPostID(ctx context.Context, postID int32) ([]Share, error) {
+	rows, err := q.db.QueryContext(ctx, getSharesByPostID, postID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Share
+	for rows.Next() {
+		var i Share
+		if err := rows.Scan(
+			&i.ID,
+			&i.PostID,
+			&i.UserID,
+			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
