@@ -10,6 +10,7 @@ import (
 type DataStore interface {
 	UserRepository() UserRepository
 	PostRepository() PostRepository
+	CommentRepository() CommentRepository
 	LikeRepository() LikeRepository
 	ShareRepository() ShareRepository
 	Opts() json.Options
@@ -22,30 +23,31 @@ type Repository[T, C, U any] interface {
 	Delete(context.Context, int32) error
 }
 
-type SearchableByUserID[T, C, U any] interface {
+type UserScopedRepository[T, C, U any] interface {
 	Repository[T, C, U]
-	IdentifiedByUser[T]
+	HasUserScope[T]
 }
 
-type SearchableByPostID[T, C, U any] interface {
+type PostScopedRepository[T, C, U any] interface {
 	Repository[T, C, U]
-	IdentifiedByPost[T]
+	HasPostScope[T]
 }
 
-type IdentifiedByUser[T any] interface {
+type HasUserScope[T any] interface {
 	GetByUserID(context.Context, int32) ([]T, error)
 }
 
-type IdentifiedByPost[T any] interface {
+type HasPostScope[T any] interface {
 	GetByPostID(context.Context, int32) ([]T, error)
 }
 
 type dataStore struct {
-	users  UserRepository
-	posts  PostRepository
-	likes  LikeRepository
-	shares ShareRepository
-	opts   json.Options
+	users    UserRepository
+	posts    PostRepository
+	comments CommentRepository
+	likes    LikeRepository
+	shares   ShareRepository
+	opts     json.Options
 }
 
 func NewDataStore(ctx context.Context, url string) (DataStore, error) {
@@ -56,6 +58,7 @@ func NewDataStore(ctx context.Context, url string) (DataStore, error) {
 	ds := &dataStore{opts: getOptions()}
 	ds.users = newUserRepository(q)
 	ds.posts = newPostRepository(q)
+	ds.comments = newCommentRepository(q)
 	ds.likes = newLikeRepository(q)
 	ds.shares = newShareRepository(q)
 	return ds, nil
@@ -67,6 +70,10 @@ func (ds *dataStore) UserRepository() UserRepository {
 
 func (ds *dataStore) PostRepository() PostRepository {
 	return ds.posts
+}
+
+func (ds *dataStore) CommentRepository() CommentRepository {
+	return ds.comments
 }
 
 func (ds *dataStore) LikeRepository() LikeRepository {

@@ -66,6 +66,8 @@ func (h *Router) userRouter() http.Handler {
 	r.With(idCtx).Get("/{id}/posts", getByUserID(h.ds.PostRepository(), opts))
 	r.With(idCtx).Get("/{id}/shares", getByUserID(h.ds.ShareRepository(), opts))
 	r.With(idCtx).Get("/{id}/likes", getByUserID(h.ds.LikeRepository(), opts))
+	r.With(idCtx).Get("/{id}/following", getFollowing(repo, opts))
+	r.With(idCtx).Get("/{id}/followers", getFollowers(repo, opts))
 	return r
 }
 

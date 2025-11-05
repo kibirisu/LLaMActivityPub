@@ -66,7 +66,7 @@ func getByID[T, C, U any, R data.Repository[T, C, U]](repo R, opts json.Options)
 	}
 }
 
-func getByUserID[T, C, U any, R data.SearchableByUserID[T, C, U]](repo R, opts json.Options) http.HandlerFunc {
+func getByUserID[T, C, U any, R data.UserScopedRepository[T, C, U]](repo R, opts json.Options) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.Context().Value(keyID).(int32)
 		items, err := repo.GetByUserID(r.Context(), id)
@@ -81,7 +81,7 @@ func getByUserID[T, C, U any, R data.SearchableByUserID[T, C, U]](repo R, opts j
 	}
 }
 
-func getByPostID[T, C, U any, R data.SearchableByPostID[T, C, U]](repo R, opts json.Options) http.HandlerFunc {
+func getByPostID[T, C, U any, R data.PostScopedRepository[T, C, U]](repo R, opts json.Options) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.Context().Value(keyID).(int32)
 		items, err := repo.GetByPostID(r.Context(), id)
@@ -123,6 +123,36 @@ func update[T, C, U any, R data.Repository[T, C, U]](repo R, opts json.Options) 
 			return
 		}
 		if err := writeSuccess(w, &item, http.StatusOK, opts); err != nil {
+			log.Println(err)
+		}
+	}
+}
+
+func getFollowers(repo data.UserRepository, opts json.Options) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := r.Context().Value(keyID).(int32)
+		users, err := repo.GetFollowers(r.Context(), id)
+		if err != nil {
+			log.Println(err)
+			_ = writeError(w, err, http.StatusInternalServerError, opts)
+			return
+		}
+		if err = writeSuccess(w, users, int(http.StatusOK), opts); err != nil {
+			log.Println(err)
+		}
+	}
+}
+
+func getFollowing(repo data.UserRepository, opts json.Options) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := r.Context().Value(keyID).(int32)
+		users, err := repo.GetFollowed(r.Context(), id)
+		if err != nil {
+			log.Println(err)
+			_ = writeError(w, err, http.StatusInternalServerError, opts)
+			return
+		}
+		if err = writeSuccess(w, users, int(http.StatusOK), opts); err != nil {
 			log.Println(err)
 		}
 	}

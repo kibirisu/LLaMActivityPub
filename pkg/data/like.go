@@ -8,8 +8,8 @@ import (
 
 type LikeRepository interface {
 	Repository[db.Like, db.AddLikeParams, any]
-	IdentifiedByUser[db.Like]
-	IdentifiedByPost[db.Like]
+	HasUserScope[db.Like]
+	HasPostScope[db.Like]
 }
 
 type likeRepository struct {

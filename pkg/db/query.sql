@@ -1,6 +1,3 @@
--- name: GetUsers :many
-SELECT * FROM users;
-
 -- name: AddUser :exec
 INSERT INTO users (
   username,
@@ -15,7 +12,10 @@ INSERT INTO users (
 SELECT * FROM users WHERE id = $1;
 
 -- name: GetFollowedUsers :many
-SELECT f.following_id FROM users u JOIN followers f ON u.id = f.follower_id WHERE u.id = $1;
+SELECT u.* FROM users u JOIN followers f ON u.id = f.following_id WHERE f.follower_id = $1;
+
+-- name: GetFollowingUsers :many
+SELECT u.* FROM users u JOIN followers f ON u.id = f.follower_id WHERE f.following_id = $1;
 
 -- name: UpdateUser :exec
 UPDATE users SET password_hash = $2, bio = $3, followers_count = $4, following_count = $5, is_admin = $6 WHERE id = $1;
@@ -23,9 +23,6 @@ UPDATE users SET password_hash = $2, bio = $3, followers_count = $4, following_c
 -- name: DeleteUser :exec
 DELETE FROM users WHERE id = $1;
 
-
--- name: GetPosts :many
-SELECT * FROM posts;
 
 -- name: AddPost :exec
 INSERT INTO posts (user_id, content) VALUES ($1, $2);
@@ -43,8 +40,20 @@ UPDATE posts SET content = $2, like_count = $3, share_count = $4, comment_count 
 DELETE FROM posts WHERE id = $1;
 
 
--- name: GetLikes :many
-SELECT * FROM likes;
+-- name: AddComment :exec
+INSERT INTO comments (post_id, user_id, content, parent_id) VALUES ($1, $2, $3, $4);
+
+SELECT * FROM comments WHERE id = $1;
+
+-- name: GetPostComments :many
+SELECT c.* FROM comments c JOIN posts p ON c.post_id = p.id WHERE p.id = $1;
+
+-- name: GetUserComments :many
+SELECT c.* FROM comments c JOIN users u ON c.user_id = u.id WHERE u.id = $1;
+
+-- name: DeleteComment :exec
+DELETE FROM comments WHERE id = $1;
+
 
 -- name: AddLike :exec
 INSERT INTO likes (post_id, user_id) VALUES ($1, $2);
@@ -61,9 +70,6 @@ SELECT * FROM likes WHERE user_id = $1;
 -- name: DeleteLike :exec
 DELETE FROM likes WHERE id = $1;
 
-
--- name: GetShares :many
-SELECT * FROM shares;
 
 -- name: AddShare :exec
 INSERT INTO shares (post_id, user_id) VALUES ($1, $2);

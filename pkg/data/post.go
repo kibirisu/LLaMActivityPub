@@ -8,7 +8,7 @@ import (
 
 type PostRepository interface {
 	Repository[db.Post, db.AddPostParams, db.UpdatePostParams]
-	IdentifiedByUser[db.Post]
+	HasUserScope[db.Post]
 }
 
 type postRepository struct {

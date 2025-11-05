@@ -1,34 +1,5 @@
 import { Sql } from "postgres";
 
-export const getUsersQuery = `-- name: GetUsers :many
-SELECT id, username, password_hash, bio, followers_count, following_count, is_admin, created_at, updated_at FROM users`;
-
-export interface GetUsersRow {
-    id: number;
-    username: string;
-    passwordHash: string;
-    bio: string | null;
-    followersCount: number | null;
-    followingCount: number | null;
-    isAdmin: boolean | null;
-    createdAt: Date | null;
-    updatedAt: Date | null;
-}
-
-export async function getUsers(sql: Sql): Promise<GetUsersRow[]> {
-    return (await sql.unsafe(getUsersQuery, []).values()).map(row => ({
-        id: row[0],
-        username: row[1],
-        passwordHash: row[2],
-        bio: row[3],
-        followersCount: row[4],
-        followingCount: row[5],
-        isAdmin: row[6],
-        createdAt: row[7],
-        updatedAt: row[8]
-    }));
-}
-
 export const addUserQuery = `-- name: AddUser :exec
 INSERT INTO users (
   username,
@@ -91,19 +62,68 @@ export async function getUser(sql: Sql, args: GetUserArgs): Promise<GetUserRow |
 }
 
 export const getFollowedUsersQuery = `-- name: GetFollowedUsers :many
-SELECT f.following_id FROM users u JOIN followers f ON u.id = f.follower_id WHERE u.id = $1`;
+SELECT u.id, u.username, u.password_hash, u.bio, u.followers_count, u.following_count, u.is_admin, u.created_at, u.updated_at FROM users u JOIN followers f ON u.id = f.following_id WHERE f.follower_id = $1`;
 
 export interface GetFollowedUsersArgs {
-    id: number;
+    followerId: number;
 }
 
 export interface GetFollowedUsersRow {
-    followingId: number;
+    id: number;
+    username: string;
+    passwordHash: string;
+    bio: string | null;
+    followersCount: number | null;
+    followingCount: number | null;
+    isAdmin: boolean | null;
+    createdAt: Date | null;
+    updatedAt: Date | null;
 }
 
 export async function getFollowedUsers(sql: Sql, args: GetFollowedUsersArgs): Promise<GetFollowedUsersRow[]> {
-    return (await sql.unsafe(getFollowedUsersQuery, [args.id]).values()).map(row => ({
-        followingId: row[0]
+    return (await sql.unsafe(getFollowedUsersQuery, [args.followerId]).values()).map(row => ({
+        id: row[0],
+        username: row[1],
+        passwordHash: row[2],
+        bio: row[3],
+        followersCount: row[4],
+        followingCount: row[5],
+        isAdmin: row[6],
+        createdAt: row[7],
+        updatedAt: row[8]
+    }));
+}
+
+export const getFollowingUsersQuery = `-- name: GetFollowingUsers :many
+SELECT u.id, u.username, u.password_hash, u.bio, u.followers_count, u.following_count, u.is_admin, u.created_at, u.updated_at FROM users u JOIN followers f ON u.id = f.follower_id WHERE f.following_id = $1`;
+
+export interface GetFollowingUsersArgs {
+    followingId: number;
+}
+
+export interface GetFollowingUsersRow {
+    id: number;
+    username: string;
+    passwordHash: string;
+    bio: string | null;
+    followersCount: number | null;
+    followingCount: number | null;
+    isAdmin: boolean | null;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+}
+
+export async function getFollowingUsers(sql: Sql, args: GetFollowingUsersArgs): Promise<GetFollowingUsersRow[]> {
+    return (await sql.unsafe(getFollowingUsersQuery, [args.followingId]).values()).map(row => ({
+        id: row[0],
+        username: row[1],
+        passwordHash: row[2],
+        bio: row[3],
+        followersCount: row[4],
+        followingCount: row[5],
+        isAdmin: row[6],
+        createdAt: row[7],
+        updatedAt: row[8]
     }));
 }
 
@@ -132,33 +152,6 @@ export interface DeleteUserArgs {
 
 export async function deleteUser(sql: Sql, args: DeleteUserArgs): Promise<void> {
     await sql.unsafe(deleteUserQuery, [args.id]);
-}
-
-export const getPostsQuery = `-- name: GetPosts :many
-SELECT id, user_id, content, like_count, share_count, comment_count, created_at, updated_at FROM posts`;
-
-export interface GetPostsRow {
-    id: number;
-    userId: number;
-    content: string;
-    likeCount: number | null;
-    shareCount: number | null;
-    commentCount: number | null;
-    createdAt: Date | null;
-    updatedAt: Date | null;
-}
-
-export async function getPosts(sql: Sql): Promise<GetPostsRow[]> {
-    return (await sql.unsafe(getPostsQuery, []).values()).map(row => ({
-        id: row[0],
-        userId: row[1],
-        content: row[2],
-        likeCount: row[3],
-        shareCount: row[4],
-        commentCount: row[5],
-        createdAt: row[6],
-        updatedAt: row[7]
-    }));
 }
 
 export const addPostQuery = `-- name: AddPost :exec
@@ -266,23 +259,87 @@ export async function deletePost(sql: Sql, args: DeletePostArgs): Promise<void> 
     await sql.unsafe(deletePostQuery, [args.id]);
 }
 
-export const getLikesQuery = `-- name: GetLikes :many
-SELECT id, post_id, user_id, created_at FROM likes`;
+export const addCommentQuery = `-- name: AddComment :exec
+INSERT INTO comments (post_id, user_id, content, parent_id) VALUES ($1, $2, $3, $4)`;
 
-export interface GetLikesRow {
+export interface AddCommentArgs {
+    postId: number;
+    userId: number;
+    content: string;
+    parentId: number | null;
+}
+
+export async function addComment(sql: Sql, args: AddCommentArgs): Promise<void> {
+    await sql.unsafe(addCommentQuery, [args.postId, args.userId, args.content, args.parentId]);
+}
+
+export const getPostCommentsQuery = `-- name: GetPostComments :many
+SELECT c.id, c.post_id, c.user_id, c.content, c.parent_id, c.created_at, c.updated_at FROM comments c JOIN posts p ON c.post_id = p.id WHERE p.id = $1`;
+
+export interface GetPostCommentsArgs {
+    id: number;
+}
+
+export interface GetPostCommentsRow {
     id: number;
     postId: number;
     userId: number;
+    content: string;
+    parentId: number | null;
     createdAt: Date | null;
+    updatedAt: Date | null;
 }
 
-export async function getLikes(sql: Sql): Promise<GetLikesRow[]> {
-    return (await sql.unsafe(getLikesQuery, []).values()).map(row => ({
+export async function getPostComments(sql: Sql, args: GetPostCommentsArgs): Promise<GetPostCommentsRow[]> {
+    return (await sql.unsafe(getPostCommentsQuery, [args.id]).values()).map(row => ({
         id: row[0],
         postId: row[1],
         userId: row[2],
-        createdAt: row[3]
+        content: row[3],
+        parentId: row[4],
+        createdAt: row[5],
+        updatedAt: row[6]
     }));
+}
+
+export const getUserCommentsQuery = `-- name: GetUserComments :many
+SELECT c.id, c.post_id, c.user_id, c.content, c.parent_id, c.created_at, c.updated_at FROM comments c JOIN users u ON c.user_id = u.id WHERE u.id = $1`;
+
+export interface GetUserCommentsArgs {
+    id: number;
+}
+
+export interface GetUserCommentsRow {
+    id: number;
+    postId: number;
+    userId: number;
+    content: string;
+    parentId: number | null;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+}
+
+export async function getUserComments(sql: Sql, args: GetUserCommentsArgs): Promise<GetUserCommentsRow[]> {
+    return (await sql.unsafe(getUserCommentsQuery, [args.id]).values()).map(row => ({
+        id: row[0],
+        postId: row[1],
+        userId: row[2],
+        content: row[3],
+        parentId: row[4],
+        createdAt: row[5],
+        updatedAt: row[6]
+    }));
+}
+
+export const deleteCommentQuery = `-- name: DeleteComment :exec
+DELETE FROM comments WHERE id = $1`;
+
+export interface DeleteCommentArgs {
+    id: number;
+}
+
+export async function deleteComment(sql: Sql, args: DeleteCommentArgs): Promise<void> {
+    await sql.unsafe(deleteCommentQuery, [args.id]);
 }
 
 export const addLikeQuery = `-- name: AddLike :exec
@@ -380,25 +437,6 @@ export interface DeleteLikeArgs {
 
 export async function deleteLike(sql: Sql, args: DeleteLikeArgs): Promise<void> {
     await sql.unsafe(deleteLikeQuery, [args.id]);
-}
-
-export const getSharesQuery = `-- name: GetShares :many
-SELECT id, post_id, user_id, created_at FROM shares`;
-
-export interface GetSharesRow {
-    id: number;
-    postId: number;
-    userId: number;
-    createdAt: Date | null;
-}
-
-export async function getShares(sql: Sql): Promise<GetSharesRow[]> {
-    return (await sql.unsafe(getSharesQuery, []).values()).map(row => ({
-        id: row[0],
-        postId: row[1],
-        userId: row[2],
-        createdAt: row[3]
-    }));
 }
 
 export const addShareQuery = `-- name: AddShare :exec

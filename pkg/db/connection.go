@@ -18,10 +18,10 @@ func GetDB(ctx context.Context, url string) (*Queries, error) {
 	// Run database migrations
 	goose.SetBaseFS(getMigrations())
 	driver := "postgres"
-	if err := goose.SetDialect(driver); err != nil {
+	if err = goose.SetDialect(driver); err != nil {
 		return nil, err
 	}
-	if err := goose.Up(pool, "migrations"); err != nil {
+	if err = goose.Up(pool, "migrations"); err != nil {
 		return nil, err
 	}
 

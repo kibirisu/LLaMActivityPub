@@ -8,8 +8,8 @@ import (
 
 type ShareRepository interface {
 	Repository[db.Share, db.AddShareParams, any]
-	IdentifiedByUser[db.Share]
-	IdentifiedByPost[db.Share]
+	HasUserScope[db.Share]
+	HasPostScope[db.Share]
 }
 
 type shareRepository struct {
