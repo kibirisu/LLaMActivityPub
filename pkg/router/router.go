@@ -12,49 +12,45 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 )
 
-type Router struct {
-	http.Handler
-	ds     data.DataStore
-	assets fs.FS
-}
-
-func NewRouter(ds data.DataStore) *Router {
+func NewRouter(ds data.DataStore) http.Handler {
 	assets, err := web.GetAssets()
 	if err != nil {
 		log.Fatal(err)
 	}
-	r := &Router{ds: ds, assets: assets}
 
-	h := chi.NewRouter()
-	h.Use(middleware.Logger)
-	h.Use(middleware.Recoverer)
-	h.Route("/", func(h chi.Router) {
-		h.Get("/*", r.handleRoot)
-		h.Get("/static/*", r.handleAssets)
-	})
-	h.Mount("/api", r.apiRouter())
-
-	r.Handler = h
-	return r
-}
-
-func (h *Router) handleRoot(w http.ResponseWriter, r *http.Request) {
-	http.ServeFileFS(w, r, h.assets, "index.html")
-}
-
-func (h *Router) handleAssets(w http.ResponseWriter, r *http.Request) {
-	http.FileServerFS(h.assets).ServeHTTP(w, r)
-}
-
-func (h *Router) apiRouter() http.Handler {
 	r := chi.NewRouter()
-	r.Mount("/user", h.userRouter())
-	r.Mount("/post", h.postRouter())
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+	r.Route("/", func(h chi.Router) {
+		h.Get("/*", rootHandler(assets))
+		h.Get("/static/*", assetHandler(assets))
+	})
+	r.Mount("/api", apiRouter(ds))
+
 	return r
 }
 
-func (h *Router) userRouter() http.Handler {
-	repo, opts := h.ds.UserRepository(), h.ds.Opts()
+func rootHandler(assets fs.FS) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFileFS(w, r, assets, "index.html")
+	}
+}
+
+func assetHandler(assets fs.FS) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		http.FileServerFS(assets).ServeHTTP(w, r)
+	}
+}
+
+func apiRouter(ds data.DataStore) http.Handler {
+	r := chi.NewRouter()
+	r.Mount("/user", userRouter(ds))
+	r.Mount("/post", postRouter(ds))
+	return r
+}
+
+func userRouter(ds data.DataStore) http.Handler {
+	repo, opts := ds.UserRepository(), ds.Opts()
 	r := chi.NewRouter()
 	r.Post("/", create(repo, opts))
 	r.Put("/", update(repo, opts))
@@ -63,16 +59,17 @@ func (h *Router) userRouter() http.Handler {
 		r.Get("/", getByID(repo, opts))
 		r.Delete("/", delete(repo))
 	})
-	r.With(idCtx).Get("/{id}/posts", getByUserID(h.ds.PostRepository(), opts))
-	r.With(idCtx).Get("/{id}/shares", getByUserID(h.ds.ShareRepository(), opts))
-	r.With(idCtx).Get("/{id}/likes", getByUserID(h.ds.LikeRepository(), opts))
+	r.With(idCtx).Get("/{id}/posts", getByUserID(ds.PostRepository(), opts))
+	r.With(idCtx).Get("/{id}/shares", getByUserID(ds.ShareRepository(), opts))
+	r.With(idCtx).Get("/{id}/likes", getByUserID(ds.LikeRepository(), opts))
+	r.With(idCtx).Get("/{id}/comments", getByUserID(ds.CommentRepository(), opts))
 	r.With(idCtx).Get("/{id}/following", getFollowing(repo, opts))
 	r.With(idCtx).Get("/{id}/followers", getFollowers(repo, opts))
 	return r
 }
 
-func (h *Router) postRouter() http.Handler {
-	repo, opts := h.ds.PostRepository(), h.ds.Opts()
+func postRouter(ds data.DataStore) http.Handler {
+	repo, opts := ds.PostRepository(), ds.Opts()
 	r := chi.NewRouter()
 	r.Post("/", create(repo, opts))
 	r.Put("/", update(repo, opts))
@@ -81,7 +78,11 @@ func (h *Router) postRouter() http.Handler {
 		r.Get("/", getByID(repo, opts))
 		r.Delete("/", delete(repo))
 	})
-	r.With(idCtx).Get("/{id}/shares", getByPostID(h.ds.ShareRepository(), opts))
-	r.With(idCtx).Get("/{id}/likes", getByPostID(h.ds.LikeRepository(), opts))
+	r.With(idCtx).Get("/{id}/shares", getByPostID(ds.ShareRepository(), opts))
+	r.With(idCtx).Get("/{id}/likes", getByPostID(ds.LikeRepository(), opts))
+	r.With(idCtx).Get("/{id}/comments", getByPostID(ds.CommentRepository(), opts))
+	// TODO consider using different route
+	r.Post("/comments", create(ds.CommentRepository(), opts))
+	r.Delete("/comments", delete(ds.CommentRepository()))
 	return r
 }
