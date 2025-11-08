@@ -1,0 +1,5 @@
+{
+  "devDependencies": {
+    "typeorm-model-generator": "^0.4.6"
+  }
+}

@@ -10,6 +10,7 @@ AIR_ARGS := -build.cmd "$(GO_BUILD_CMD)" -build.bin "$(BIN_DIR)/$(APP_NAME)" -bu
 NODE_MODULES := $(FRONTEND_DIR)/node_modules
 LOCKFILE := $(FRONTEND_DIR)/pnpm-lock.yaml
 PACKAGE_JSON := $(FRONTEND_DIR)/package.json
+FRONTEND_MODEL_DIR := $(FRONTEND_DIR)/models
 
 export PATH := $(BIN_DIR):$(PATH)
 export GOEXPERIMENT := jsonv2
@@ -56,6 +57,17 @@ dev:
 dev-backend: dev-db setup build-frontend
 	@echo Starting dev server...
 	@APP_ENV=dev DATABASE_URL=$(DEV_DB_URL) air $(AIR_ARGS)
+
+model-frontend:
+	@echo "Generating frontend TypeScript models..."
+	@npx --prefix $(FRONTEND_DIR) typeorm-model-generator \
+		-h localhost \
+		-d borg \
+		-u borg \
+		-x borg \
+		-e postgres \
+		-o $(FRONTEND_MODEL_DIR)
+
 
 .PHONY: dev-frontend
 dev-frontend: $(NODE_MODULES)
