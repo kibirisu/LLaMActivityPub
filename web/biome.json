@@ -33,6 +33,6 @@
     }
   },
   "files": {
-    "includes": ["**", "!!dist", "!!db", "!!models"]
+    "includes": ["**", "!!dist", "!!db"]
   }
 }
