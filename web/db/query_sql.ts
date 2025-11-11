@@ -24,7 +24,7 @@ export async function addUser(sql: Sql, args: AddUserArgs): Promise<void> {
 }
 
 export const getUserQuery = `-- name: GetUser :one
-SELECT id, username, password_hash, bio, followers_count, following_count, is_admin, created_at, updated_at FROM users WHERE id = $1`;
+SELECT id, username, password_hash, bio, followers_count, following_count, is_admin, created_at, updated_at, origin FROM users WHERE id = $1`;
 
 export interface GetUserArgs {
     id: number;
@@ -40,6 +40,7 @@ export interface GetUserRow {
     isAdmin: boolean | null;
     createdAt: Date | null;
     updatedAt: Date | null;
+    origin: string | null;
 }
 
 export async function getUser(sql: Sql, args: GetUserArgs): Promise<GetUserRow | null> {
@@ -57,12 +58,13 @@ export async function getUser(sql: Sql, args: GetUserArgs): Promise<GetUserRow |
         followingCount: row[5],
         isAdmin: row[6],
         createdAt: row[7],
-        updatedAt: row[8]
+        updatedAt: row[8],
+        origin: row[9]
     };
 }
 
 export const getFollowedUsersQuery = `-- name: GetFollowedUsers :many
-SELECT u.id, u.username, u.password_hash, u.bio, u.followers_count, u.following_count, u.is_admin, u.created_at, u.updated_at FROM users u JOIN followers f ON u.id = f.following_id WHERE f.follower_id = $1`;
+SELECT u.id, u.username, u.password_hash, u.bio, u.followers_count, u.following_count, u.is_admin, u.created_at, u.updated_at, u.origin FROM users u JOIN followers f ON u.id = f.following_id WHERE f.follower_id = $1`;
 
 export interface GetFollowedUsersArgs {
     followerId: number;
@@ -78,6 +80,7 @@ export interface GetFollowedUsersRow {
     isAdmin: boolean | null;
     createdAt: Date | null;
     updatedAt: Date | null;
+    origin: string | null;
 }
 
 export async function getFollowedUsers(sql: Sql, args: GetFollowedUsersArgs): Promise<GetFollowedUsersRow[]> {
@@ -90,12 +93,13 @@ export async function getFollowedUsers(sql: Sql, args: GetFollowedUsersArgs): Pr
         followingCount: row[5],
         isAdmin: row[6],
         createdAt: row[7],
-        updatedAt: row[8]
+        updatedAt: row[8],
+        origin: row[9]
     }));
 }
 
 export const getFollowingUsersQuery = `-- name: GetFollowingUsers :many
-SELECT u.id, u.username, u.password_hash, u.bio, u.followers_count, u.following_count, u.is_admin, u.created_at, u.updated_at FROM users u JOIN followers f ON u.id = f.follower_id WHERE f.following_id = $1`;
+SELECT u.id, u.username, u.password_hash, u.bio, u.followers_count, u.following_count, u.is_admin, u.created_at, u.updated_at, u.origin FROM users u JOIN followers f ON u.id = f.follower_id WHERE f.following_id = $1`;
 
 export interface GetFollowingUsersArgs {
     followingId: number;
@@ -111,6 +115,7 @@ export interface GetFollowingUsersRow {
     isAdmin: boolean | null;
     createdAt: Date | null;
     updatedAt: Date | null;
+    origin: string | null;
 }
 
 export async function getFollowingUsers(sql: Sql, args: GetFollowingUsersArgs): Promise<GetFollowingUsersRow[]> {
@@ -123,7 +128,8 @@ export async function getFollowingUsers(sql: Sql, args: GetFollowingUsersArgs): 
         followingCount: row[5],
         isAdmin: row[6],
         createdAt: row[7],
-        updatedAt: row[8]
+        updatedAt: row[8],
+        origin: row[9]
     }));
 }
 

@@ -60,4 +60,5 @@ type User struct {
 	IsAdmin        sql.NullBool   `json:"isAdmin"`
 	CreatedAt      sql.NullTime   `json:"createdAt"`
 	UpdatedAt      sql.NullTime   `json:"updatedAt"`
+	Origin         sql.NullString `json:"origin"`
 }
