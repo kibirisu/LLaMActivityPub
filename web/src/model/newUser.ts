@@ -5,7 +5,6 @@
  * OpenAPI spec version: 0.0.1
  */
 
-export * from './newUser';
-export * from './updateUser';
-export * from './user';
-export * from './userAllOf';
+export interface NewUser {
+  username: string;
+}

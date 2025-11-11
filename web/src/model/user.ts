@@ -4,15 +4,8 @@
  * Borg API
  * OpenAPI spec version: 0.0.1
  */
+import type { NewUser } from './newUser';
+import type { UpdateUser } from './updateUser';
+import type { UserAllOf } from './userAllOf';
 
-export interface User {
-  id?: number;
-  username?: string;
-  /** @nullable */
-  bio?: string | null;
-  followersCount?: number;
-  followingCount?: number;
-  isAdmin?: boolean;
-  createdAt?: string;
-  updatedAt?: string;
-}
+export type User = NewUser & UpdateUser & UserAllOf;

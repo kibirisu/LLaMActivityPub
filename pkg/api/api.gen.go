@@ -13,23 +13,53 @@ import (
 	"github.com/oapi-codegen/runtime"
 )
 
+// NewUser defines model for NewUser.
+type NewUser struct {
+	Username string `json:"username"`
+}
+
+// UpdateUser defines model for UpdateUser.
+type UpdateUser struct {
+	Bio     *string `json:"bio,omitempty"`
+	IsAdmin *bool   `json:"isAdmin,omitempty"`
+}
+
 // User defines model for User.
 type User struct {
-	Bio            *string    `json:"bio"`
-	CreatedAt      *time.Time `json:"createdAt,omitempty"`
-	FollowersCount *int       `json:"followersCount,omitempty"`
-	FollowingCount *int       `json:"followingCount,omitempty"`
-	Id             *int       `json:"id,omitempty"`
-	IsAdmin        *bool      `json:"isAdmin,omitempty"`
-	UpdatedAt      *time.Time `json:"updatedAt,omitempty"`
-	Username       *string    `json:"username,omitempty"`
+	Bio            *string   `json:"bio,omitempty"`
+	CreatedAt      time.Time `json:"createdAt"`
+	FollowersCount *int      `json:"followersCount,omitempty"`
+	FollowingCount *int      `json:"followingCount,omitempty"`
+	Id             int       `json:"id"`
+	IsAdmin        *bool     `json:"isAdmin,omitempty"`
+	Origin         string    `json:"origin"`
+	UpdatedAt      time.Time `json:"updatedAt"`
+	Username       string    `json:"username"`
 }
+
+// Id defines model for Id.
+type Id = int
+
+// PostApiUsersJSONRequestBody defines body for PostApiUsers for application/json ContentType.
+type PostApiUsersJSONRequestBody = NewUser
+
+// PutApiUsersIdJSONRequestBody defines body for PutApiUsersId for application/json ContentType.
+type PutApiUsersIdJSONRequestBody = UpdateUser
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// Create a user
+	// (POST /api/users)
+	PostApiUsers(w http.ResponseWriter, r *http.Request)
+	// Delete a user by ID
+	// (DELETE /api/users/{id})
+	DeleteApiUsersId(w http.ResponseWriter, r *http.Request, id Id)
 	// Get a user by ID
 	// (GET /api/users/{id})
-	GetApiUsersId(w http.ResponseWriter, r *http.Request, id int)
+	GetApiUsersId(w http.ResponseWriter, r *http.Request, id Id)
+	// Update a user
+	// (PUT /api/users/{id})
+	PutApiUsersId(w http.ResponseWriter, r *http.Request, id Id)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -41,13 +71,52 @@ type ServerInterfaceWrapper struct {
 
 type MiddlewareFunc func(http.Handler) http.Handler
 
+// PostApiUsers operation middleware
+func (siw *ServerInterfaceWrapper) PostApiUsers(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostApiUsers(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteApiUsersId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteApiUsersId(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id Id
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", r.PathValue("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteApiUsersId(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 // GetApiUsersId operation middleware
 func (siw *ServerInterfaceWrapper) GetApiUsersId(w http.ResponseWriter, r *http.Request) {
 
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id int
+	var id Id
 
 	err = runtime.BindStyledParameterWithOptions("simple", "id", r.PathValue("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -57,6 +126,31 @@ func (siw *ServerInterfaceWrapper) GetApiUsersId(w http.ResponseWriter, r *http.
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetApiUsersId(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// PutApiUsersId operation middleware
+func (siw *ServerInterfaceWrapper) PutApiUsersId(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id Id
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", r.PathValue("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PutApiUsersId(w, r, id)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -186,7 +280,10 @@ func HandlerWithOptions(si ServerInterface, options StdHTTPServerOptions) http.H
 		ErrorHandlerFunc:   options.ErrorHandlerFunc,
 	}
 
+	m.HandleFunc("POST "+options.BaseURL+"/api/users", wrapper.PostApiUsers)
+	m.HandleFunc("DELETE "+options.BaseURL+"/api/users/{id}", wrapper.DeleteApiUsersId)
 	m.HandleFunc("GET "+options.BaseURL+"/api/users/{id}", wrapper.GetApiUsersId)
+	m.HandleFunc("PUT "+options.BaseURL+"/api/users/{id}", wrapper.PutApiUsersId)
 
 	return m
 }

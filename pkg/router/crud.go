@@ -66,7 +66,10 @@ func getByID[T, C, U any, R data.Repository[T, C, U]](repo R, opts json.Options)
 	}
 }
 
-func getByUserID[T, C, U any, R data.UserScopedRepository[T, C, U]](repo R, opts json.Options) http.HandlerFunc {
+func getByUserID[T, C, U any, R data.UserScopedRepository[T, C, U]](
+	repo R,
+	opts json.Options,
+) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.Context().Value(keyID).(int32)
 		items, err := repo.GetByUserID(r.Context(), id)
@@ -81,7 +84,10 @@ func getByUserID[T, C, U any, R data.UserScopedRepository[T, C, U]](repo R, opts
 	}
 }
 
-func getByPostID[T, C, U any, R data.PostScopedRepository[T, C, U]](repo R, opts json.Options) http.HandlerFunc {
+func getByPostID[T, C, U any, R data.PostScopedRepository[T, C, U]](
+	repo R,
+	opts json.Options,
+) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.Context().Value(keyID).(int32)
 		items, err := repo.GetByPostID(r.Context(), id)
