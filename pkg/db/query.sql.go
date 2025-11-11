@@ -151,7 +151,7 @@ func (q *Queries) DeleteUser(ctx context.Context, id int32) error {
 }
 
 const getFollowedUsers = `-- name: GetFollowedUsers :many
-SELECT u.id, u.username, u.password_hash, u.bio, u.followers_count, u.following_count, u.is_admin, u.created_at, u.updated_at FROM users u JOIN followers f ON u.id = f.following_id WHERE f.follower_id = $1
+SELECT u.id, u.username, u.password_hash, u.bio, u.followers_count, u.following_count, u.is_admin, u.created_at, u.updated_at, u.origin FROM users u JOIN followers f ON u.id = f.following_id WHERE f.follower_id = $1
 `
 
 func (q *Queries) GetFollowedUsers(ctx context.Context, followerID int32) ([]User, error) {
@@ -173,6 +173,7 @@ func (q *Queries) GetFollowedUsers(ctx context.Context, followerID int32) ([]Use
 			&i.IsAdmin,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Origin,
 		); err != nil {
 			return nil, err
 		}
@@ -188,7 +189,7 @@ func (q *Queries) GetFollowedUsers(ctx context.Context, followerID int32) ([]Use
 }
 
 const getFollowingUsers = `-- name: GetFollowingUsers :many
-SELECT u.id, u.username, u.password_hash, u.bio, u.followers_count, u.following_count, u.is_admin, u.created_at, u.updated_at FROM users u JOIN followers f ON u.id = f.follower_id WHERE f.following_id = $1
+SELECT u.id, u.username, u.password_hash, u.bio, u.followers_count, u.following_count, u.is_admin, u.created_at, u.updated_at, u.origin FROM users u JOIN followers f ON u.id = f.follower_id WHERE f.following_id = $1
 `
 
 func (q *Queries) GetFollowingUsers(ctx context.Context, followingID int32) ([]User, error) {
@@ -210,6 +211,7 @@ func (q *Queries) GetFollowingUsers(ctx context.Context, followingID int32) ([]U
 			&i.IsAdmin,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.Origin,
 		); err != nil {
 			return nil, err
 		}
@@ -476,7 +478,7 @@ func (q *Queries) GetSharesByPostID(ctx context.Context, postID int32) ([]Share,
 }
 
 const getUser = `-- name: GetUser :one
-SELECT id, username, password_hash, bio, followers_count, following_count, is_admin, created_at, updated_at FROM users WHERE id = $1
+SELECT id, username, password_hash, bio, followers_count, following_count, is_admin, created_at, updated_at, origin FROM users WHERE id = $1
 `
 
 func (q *Queries) GetUser(ctx context.Context, id int32) (User, error) {
@@ -492,6 +494,7 @@ func (q *Queries) GetUser(ctx context.Context, id int32) (User, error) {
 		&i.IsAdmin,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.Origin,
 	)
 	return i, err
 }
