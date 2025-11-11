@@ -7,8 +7,9 @@ INSERT INTO users (
   bio,
   followers_count,
   following_count,
-  is_admin
-) VALUES ($1, $2, $3, $4, $5, $6)`;
+  is_admin,
+  origin
+) VALUES ($1, $2, $3, $4, $5, $6, $7)`;
 
 export interface AddUserArgs {
     username: string;
@@ -17,10 +18,11 @@ export interface AddUserArgs {
     followersCount: number | null;
     followingCount: number | null;
     isAdmin: boolean | null;
+    origin: string | null;
 }
 
 export async function addUser(sql: Sql, args: AddUserArgs): Promise<void> {
-    await sql.unsafe(addUserQuery, [args.username, args.passwordHash, args.bio, args.followersCount, args.followingCount, args.isAdmin]);
+    await sql.unsafe(addUserQuery, [args.username, args.passwordHash, args.bio, args.followersCount, args.followingCount, args.isAdmin, args.origin]);
 }
 
 export const getUserQuery = `-- name: GetUser :one
@@ -540,5 +542,67 @@ export interface DeleteShareArgs {
 
 export async function deleteShare(sql: Sql, args: DeleteShareArgs): Promise<void> {
     await sql.unsafe(deleteShareQuery, [args.id]);
+}
+
+export const getPostsByOriginQuery = `-- name: GetPostsByOrigin :many
+SELECT p.id, p.user_id, p.content, p.like_count, p.share_count, p.comment_count, p.created_at, p.updated_at FROM posts p JOIN users u ON p.user_id = u.id WHERE u.origin = $1`;
+
+export interface GetPostsByOriginArgs {
+    origin: string | null;
+}
+
+export interface GetPostsByOriginRow {
+    id: number;
+    userId: number;
+    content: string;
+    likeCount: number | null;
+    shareCount: number | null;
+    commentCount: number | null;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+}
+
+export async function getPostsByOrigin(sql: Sql, args: GetPostsByOriginArgs): Promise<GetPostsByOriginRow[]> {
+    return (await sql.unsafe(getPostsByOriginQuery, [args.origin]).values()).map(row => ({
+        id: row[0],
+        userId: row[1],
+        content: row[2],
+        likeCount: row[3],
+        shareCount: row[4],
+        commentCount: row[5],
+        createdAt: row[6],
+        updatedAt: row[7]
+    }));
+}
+
+export const getAllUsersQuery = `-- name: GetAllUsers :many
+SELECT id, username, password_hash, bio, followers_count, following_count, is_admin, created_at, updated_at, origin FROM users`;
+
+export interface GetAllUsersRow {
+    id: number;
+    username: string;
+    passwordHash: string;
+    bio: string | null;
+    followersCount: number | null;
+    followingCount: number | null;
+    isAdmin: boolean | null;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+    origin: string | null;
+}
+
+export async function getAllUsers(sql: Sql): Promise<GetAllUsersRow[]> {
+    return (await sql.unsafe(getAllUsersQuery, []).values()).map(row => ({
+        id: row[0],
+        username: row[1],
+        passwordHash: row[2],
+        bio: row[3],
+        followersCount: row[4],
+        followingCount: row[5],
+        isAdmin: row[6],
+        createdAt: row[7],
+        updatedAt: row[8],
+        origin: row[9]
+    }));
 }
 
