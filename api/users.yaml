@@ -1,0 +1,107 @@
+paths:
+  /api/users:
+    post:
+      summary: Create a user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewUser"
+        responses:
+          "201":
+            description: Created user
+  /api/users/{id}:
+    get:
+      summary: Get a user by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+    delete:
+      summary: Delete a user by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted successfully
+
+    put:
+      summary: Update a user
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUser"
+      responses:
+        "200":
+          description: Updated user
+
+components:
+  schemas:
+    NewUser:
+      type: object
+      required:
+        - username
+      properties:
+        username:
+          type: string
+
+    UpdateUser:
+      type: object
+      properties:
+        bio:
+          type: string
+        isAdmin:
+          type: boolean
+
+    User:
+      allOf:
+        - $ref: "#/components/schemas/NewUser"
+        - $ref: "#/components/schemas/UpdateUser"
+        - type: object
+          required:
+            - id
+            - origin
+            - followersCount
+            - followingCount
+            - createdAt
+            - updatedAt
+          properties:
+            id:
+              type: integer
+            origin:
+              type: string
+            followersCount:
+              type: integer
+              readOnly: true
+            followingCount:
+              type: integer
+              readOnly: true
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time

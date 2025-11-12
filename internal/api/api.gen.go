@@ -8,43 +8,9 @@ package api
 import (
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/oapi-codegen/runtime"
 )
-
-// NewUser defines model for NewUser.
-type NewUser struct {
-	Username string `json:"username"`
-}
-
-// UpdateUser defines model for UpdateUser.
-type UpdateUser struct {
-	Bio     *string `json:"bio,omitempty"`
-	IsAdmin *bool   `json:"isAdmin,omitempty"`
-}
-
-// User defines model for User.
-type User struct {
-	Bio            *string   `json:"bio,omitempty"`
-	CreatedAt      time.Time `json:"createdAt"`
-	FollowersCount *int      `json:"followersCount,omitempty"`
-	FollowingCount *int      `json:"followingCount,omitempty"`
-	Id             int       `json:"id"`
-	IsAdmin        *bool     `json:"isAdmin,omitempty"`
-	Origin         string    `json:"origin"`
-	UpdatedAt      time.Time `json:"updatedAt"`
-	Username       string    `json:"username"`
-}
-
-// Id defines model for Id.
-type Id = int
-
-// PostApiUsersJSONRequestBody defines body for PostApiUsers for application/json ContentType.
-type PostApiUsersJSONRequestBody = NewUser
-
-// PutApiUsersIdJSONRequestBody defines body for PutApiUsersId for application/json ContentType.
-type PutApiUsersIdJSONRequestBody = UpdateUser
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
@@ -53,13 +19,13 @@ type ServerInterface interface {
 	PostApiUsers(w http.ResponseWriter, r *http.Request)
 	// Delete a user by ID
 	// (DELETE /api/users/{id})
-	DeleteApiUsersId(w http.ResponseWriter, r *http.Request, id Id)
+	DeleteApiUsersId(w http.ResponseWriter, r *http.Request, id int)
 	// Get a user by ID
 	// (GET /api/users/{id})
-	GetApiUsersId(w http.ResponseWriter, r *http.Request, id Id)
+	GetApiUsersId(w http.ResponseWriter, r *http.Request, id int)
 	// Update a user
 	// (PUT /api/users/{id})
-	PutApiUsersId(w http.ResponseWriter, r *http.Request, id Id)
+	PutApiUsersId(w http.ResponseWriter, r *http.Request, id int)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -91,7 +57,7 @@ func (siw *ServerInterfaceWrapper) DeleteApiUsersId(w http.ResponseWriter, r *ht
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id Id
+	var id int
 
 	err = runtime.BindStyledParameterWithOptions("simple", "id", r.PathValue("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -116,7 +82,7 @@ func (siw *ServerInterfaceWrapper) GetApiUsersId(w http.ResponseWriter, r *http.
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id Id
+	var id int
 
 	err = runtime.BindStyledParameterWithOptions("simple", "id", r.PathValue("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -141,7 +107,7 @@ func (siw *ServerInterfaceWrapper) PutApiUsersId(w http.ResponseWriter, r *http.
 	var err error
 
 	// ------------- Path parameter "id" -------------
-	var id Id
+	var id int
 
 	err = runtime.BindStyledParameterWithOptions("simple", "id", r.PathValue("id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
