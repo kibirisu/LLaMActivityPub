@@ -1,10 +1,10 @@
-package data
+package domain
 
 import (
 	"context"
 	"encoding/json"
 
-	"borg/pkg/db"
+	"borg/internal/db"
 )
 
 type DataStore interface {

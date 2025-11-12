@@ -3,7 +3,7 @@ import { defineConfig } from "orval";
 export default defineConfig({
   api: {
     input: {
-      target: "../api/openapi-spec/openapi.yaml",
+      target: "../api/openapi.yaml",
     },
 
     output: {

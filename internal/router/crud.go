@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"borg/pkg/data"
+	"borg/internal/domain"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -32,7 +32,7 @@ func idCtx(next http.Handler) http.Handler {
 	})
 }
 
-func create[T, C, U any, R data.Repository[T, C, U]](repo R, opts json.Options) http.HandlerFunc {
+func create[T, C, U any, R domain.Repository[T, C, U]](repo R, opts json.Options) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var item C
 		if err := json.UnmarshalRead(r.Body, &item, opts); err != nil {
@@ -51,7 +51,10 @@ func create[T, C, U any, R data.Repository[T, C, U]](repo R, opts json.Options) 
 	}
 }
 
-func getByID[T, C, U any, R data.Repository[T, C, U]](repo R, opts json.Options) http.HandlerFunc {
+func getByID[T, C, U any, R domain.Repository[T, C, U]](
+	repo R,
+	opts json.Options,
+) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.Context().Value(keyID).(int32)
 		item, err := repo.GetByID(r.Context(), id)
@@ -66,7 +69,7 @@ func getByID[T, C, U any, R data.Repository[T, C, U]](repo R, opts json.Options)
 	}
 }
 
-func getByUserID[T, C, U any, R data.UserScopedRepository[T, C, U]](
+func getByUserID[T, C, U any, R domain.UserScopedRepository[T, C, U]](
 	repo R,
 	opts json.Options,
 ) http.HandlerFunc {
@@ -84,7 +87,7 @@ func getByUserID[T, C, U any, R data.UserScopedRepository[T, C, U]](
 	}
 }
 
-func getByPostID[T, C, U any, R data.PostScopedRepository[T, C, U]](
+func getByPostID[T, C, U any, R domain.PostScopedRepository[T, C, U]](
 	repo R,
 	opts json.Options,
 ) http.HandlerFunc {
@@ -102,7 +105,7 @@ func getByPostID[T, C, U any, R data.PostScopedRepository[T, C, U]](
 	}
 }
 
-func delete[T, C, U any, R data.Repository[T, C, U]](repo R) http.HandlerFunc {
+func delete[T, C, U any, R domain.Repository[T, C, U]](repo R) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.Context().Value(keyID).(int32)
 		if err := repo.Delete(r.Context(), id); err != nil {
@@ -116,7 +119,7 @@ func delete[T, C, U any, R data.Repository[T, C, U]](repo R) http.HandlerFunc {
 	}
 }
 
-func update[T, C, U any, R data.Repository[T, C, U]](repo R, opts json.Options) http.HandlerFunc {
+func update[T, C, U any, R domain.Repository[T, C, U]](repo R, opts json.Options) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var item U
 		if err := json.UnmarshalRead(r.Body, &item, opts); err != nil {
@@ -134,7 +137,7 @@ func update[T, C, U any, R data.Repository[T, C, U]](repo R, opts json.Options) 
 	}
 }
 
-func getFollowers(repo data.UserRepository, opts json.Options) http.HandlerFunc {
+func getFollowers(repo domain.UserRepository, opts json.Options) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.Context().Value(keyID).(int32)
 		users, err := repo.GetFollowers(r.Context(), id)
@@ -149,7 +152,7 @@ func getFollowers(repo data.UserRepository, opts json.Options) http.HandlerFunc 
 	}
 }
 
-func getFollowing(repo data.UserRepository, opts json.Options) http.HandlerFunc {
+func getFollowing(repo domain.UserRepository, opts json.Options) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.Context().Value(keyID).(int32)
 		users, err := repo.GetFollowed(r.Context(), id)

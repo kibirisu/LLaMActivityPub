@@ -5,16 +5,16 @@ import (
 	"log"
 	"net/http"
 
-	"borg/pkg/config"
-	"borg/pkg/data"
-	"borg/pkg/router"
+	"borg/internal/config"
+	"borg/internal/domain"
+	"borg/internal/router"
 )
 
 func main() {
 	ctx := context.Background()
 	conf := config.GetConfig()
 
-	ds, err := data.NewDataStore(ctx, conf.DatabaseURL)
+	ds, err := domain.NewDataStore(ctx, conf.DatabaseURL)
 	if err != nil {
 		log.Fatal(err)
 	}

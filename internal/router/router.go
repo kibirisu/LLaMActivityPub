@@ -5,14 +5,14 @@ import (
 	"log"
 	"net/http"
 
-	"borg/pkg/data"
+	"borg/internal/domain"
 	"borg/web"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 )
 
-func NewRouter(ds data.DataStore) http.Handler {
+func NewRouter(ds domain.DataStore) http.Handler {
 	assets, err := web.GetAssets()
 	if err != nil {
 		log.Fatal(err)
@@ -42,14 +42,14 @@ func assetHandler(assets fs.FS) http.HandlerFunc {
 	}
 }
 
-func apiRouter(ds data.DataStore) http.Handler {
+func apiRouter(ds domain.DataStore) http.Handler {
 	r := chi.NewRouter()
 	r.Mount("/user", userRouter(ds))
 	r.Mount("/post", postRouter(ds))
 	return r
 }
 
-func userRouter(ds data.DataStore) http.Handler {
+func userRouter(ds domain.DataStore) http.Handler {
 	repo, opts := ds.UserRepository(), ds.Opts()
 	r := chi.NewRouter()
 	r.Post("/", create(repo, opts))
@@ -68,7 +68,7 @@ func userRouter(ds data.DataStore) http.Handler {
 	return r
 }
 
-func postRouter(ds data.DataStore) http.Handler {
+func postRouter(ds domain.DataStore) http.Handler {
 	repo, opts := ds.PostRepository(), ds.Opts()
 	r := chi.NewRouter()
 	r.Post("/", create(repo, opts))
