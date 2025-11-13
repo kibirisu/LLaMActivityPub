@@ -1,5 +1,5 @@
 import { useParams } from 'react-router';
-import { samplePosts, type Post } from '../feed/feedData';
+import { type Post, samplePosts } from '../feed/feedData';
 import PostItem from '../feed/PostItem';
 
 export default function UserProfile() {

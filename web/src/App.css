@@ -1,5 +1,3 @@
 @import "tailwindcss";
-/* biome-ignore lint/suspicious/noUnknownAtRules: plugins */
 @plugin "@tailwindcss/typography";
-/* biome-ignore lint/suspicious/noUnknownAtRules: plugins */
 @plugin "daisyui";
