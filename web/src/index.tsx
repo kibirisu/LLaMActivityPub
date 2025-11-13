@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router';
 import App from './App';
+import CommentView from './components/feed/CommentView';
 import UserProfile from './components/profile/UserProfile';
 
 const router = createBrowserRouter([
@@ -16,6 +17,10 @@ const router = createBrowserRouter([
   {
     path: '/foo',
     element: <h1>bar</h1>,
+  },
+  {
+    path: '/post/:postId',
+    element: <CommentView />,
   },
 ]);
 
