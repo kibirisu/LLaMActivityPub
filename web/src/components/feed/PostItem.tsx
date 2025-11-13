@@ -3,6 +3,7 @@ import ReactMarkdown from 'react-markdown';
 import { Link } from 'react-router';
 import type { Post } from './feedData';
 import { timeAgo } from './utils';
+import { Link } from 'react-router';
 
 type Props = {
   post: Post;
