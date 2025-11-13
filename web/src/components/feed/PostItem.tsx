@@ -2,7 +2,6 @@ import { Heart, MessageCircle, Repeat, Share2 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Link } from 'react-router';
 import type { Post } from './feedData';
-import { timeAgo } from './utils';
 
 type Props = {
   post: Post;
@@ -15,17 +14,11 @@ export default function PostItem({ post }: Props) {
         <div className="flex-1">
           <div className="flex items-center space-x-1">
             <Link
-              to={`/profile/${post.author.handle.replace(/^@/, '')}`}
+              to={`/profile/${post.author.replace(/^@/, '')}`}
               className="font-semibold text-gray-900 hover:underline"
             >
-              {post.author.name}
+              {post.author}
             </Link>
-            <span className="text-gray-500 text-sm">
-              <Link to={`/profile/${post.author.handle.replace(/^@/, '')}`} className="hover:underline">
-                {post.author.handle}
-              </Link>{' '}
-              · {timeAgo(post.createdAt)}
-            </span>
           </div>
           <div className="prose max-w-none text-gray-800">
             <ReactMarkdown>{post.content}</ReactMarkdown>
