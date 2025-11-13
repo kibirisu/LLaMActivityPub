@@ -9,8 +9,8 @@
 export type UserAllOf = {
   id: number;
   origin: string;
-  readonly followersCount: number;
-  readonly followingCount: number;
+  followersCount: number;
+  followingCount: number;
   createdAt: string;
   updatedAt: string;
 };

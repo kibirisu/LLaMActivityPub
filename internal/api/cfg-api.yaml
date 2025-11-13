@@ -3,6 +3,5 @@ package: api
 output: api.gen.go
 generate:
   std-http-server: true
-  # models: true
 import-mapping:
   ./users.yaml: "-"

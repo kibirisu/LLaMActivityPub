@@ -9,4 +9,4 @@ import type { NewUser } from './newUser';
 import type { UpdateUser } from './updateUser';
 import type { UserAllOf } from './userAllOf';
 
-export type User = NewUser & UpdateUser & UserAllOf;
+export type User = NewUser & UpdateUser & UserAllOf & Required<Pick<NewUser & UpdateUser & UserAllOf, 'bio' | 'isAdmin'>>;

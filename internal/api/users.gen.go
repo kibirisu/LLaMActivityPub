@@ -20,12 +20,12 @@ type UpdateUser struct {
 
 // User defines model for User.
 type User struct {
-	Bio            *string   `json:"bio,omitempty"`
+	Bio            string    `json:"bio"`
 	CreatedAt      time.Time `json:"createdAt"`
-	FollowersCount *int      `json:"followersCount,omitempty"`
-	FollowingCount *int      `json:"followingCount,omitempty"`
+	FollowersCount int       `json:"followersCount"`
+	FollowingCount int       `json:"followingCount"`
 	Id             int       `json:"id"`
-	IsAdmin        *bool     `json:"isAdmin,omitempty"`
+	IsAdmin        bool      `json:"isAdmin"`
 	Origin         string    `json:"origin"`
 	UpdatedAt      time.Time `json:"updatedAt"`
 	Username       string    `json:"username"`
