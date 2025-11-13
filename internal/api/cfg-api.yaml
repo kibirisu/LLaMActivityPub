@@ -2,6 +2,6 @@
 package: api
 output: api.gen.go
 generate:
-  std-http-server: true
+  chi-server: true
 import-mapping:
   ./users.yaml: "-"

@@ -3,11 +3,10 @@ package main
 import (
 	"context"
 	"log"
-	"net/http"
 
 	"borg/internal/config"
 	"borg/internal/domain"
-	"borg/internal/router"
+	"borg/internal/server"
 )
 
 func main() {
@@ -19,6 +18,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	r := router.NewRouter(ds)
-	_ = http.ListenAndServe(":"+conf.ListenPort, r)
+	s := server.NewServer(conf.ListenPort, ds)
+	err = s.ListenAndServe()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
