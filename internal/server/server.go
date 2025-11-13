@@ -90,5 +90,16 @@ func (s *Server) PostApiUsers(w http.ResponseWriter, r *http.Request) {
 
 // PutApiUsersId implements api.ServerInterface.
 func (s *Server) PutApiUsersId(w http.ResponseWriter, r *http.Request, id int) {
-	panic("unimplemented")
+	var user api.UpdateUser
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	if err := s.ds.UserRepository().Update(r.Context(), *models.UpdateUserToDBType(&user)); err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }

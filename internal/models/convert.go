@@ -31,3 +31,28 @@ func AddUserToDBType(u *api.NewUser) *db.AddUserParams {
 		IsAdmin:        sql.NullBool{},
 	}
 }
+
+func UpdateUserToDBType(u *api.UpdateUser) *db.UpdateUserParams {
+	var bio sql.NullString
+	var isAdmin sql.NullBool
+	if u.Bio != nil {
+		bio = sql.NullString{
+			String: *u.Bio,
+			Valid:  true,
+		}
+	}
+	if u.IsAdmin != nil {
+		isAdmin = sql.NullBool{
+			Bool:  *u.IsAdmin,
+			Valid: true,
+		}
+	}
+	return &db.UpdateUserParams{
+		ID:             0,
+		PasswordHash:   "",
+		Bio:            bio,
+		FollowersCount: sql.NullInt32{},
+		FollowingCount: sql.NullInt32{},
+		IsAdmin:        isAdmin,
+	}
+}
