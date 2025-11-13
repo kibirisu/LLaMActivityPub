@@ -80,8 +80,9 @@ INSERT INTO users (
   bio,
   followers_count,
   following_count,
-  is_admin
-) VALUES ($1, $2, $3, $4, $5, $6)
+  is_admin,
+  origin
+) VALUES ($1, $2, $3, $4, $5, $6, $7)
 `
 
 type AddUserParams struct {
@@ -91,6 +92,7 @@ type AddUserParams struct {
 	FollowersCount sql.NullInt32  `json:"followersCount"`
 	FollowingCount sql.NullInt32  `json:"followingCount"`
 	IsAdmin        sql.NullBool   `json:"isAdmin"`
+	Origin         sql.NullString `json:"origin"`
 }
 
 func (q *Queries) AddUser(ctx context.Context, arg AddUserParams) error {
@@ -101,6 +103,7 @@ func (q *Queries) AddUser(ctx context.Context, arg AddUserParams) error {
 		arg.FollowersCount,
 		arg.FollowingCount,
 		arg.IsAdmin,
+		arg.Origin,
 	)
 	return err
 }
@@ -148,6 +151,44 @@ DELETE FROM users WHERE id = $1
 func (q *Queries) DeleteUser(ctx context.Context, id int32) error {
 	_, err := q.db.ExecContext(ctx, deleteUser, id)
 	return err
+}
+
+const getAllUsers = `-- name: GetAllUsers :many
+SELECT id, username, password_hash, bio, followers_count, following_count, is_admin, created_at, updated_at, origin FROM users
+`
+
+func (q *Queries) GetAllUsers(ctx context.Context) ([]User, error) {
+	rows, err := q.db.QueryContext(ctx, getAllUsers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.ID,
+			&i.Username,
+			&i.PasswordHash,
+			&i.Bio,
+			&i.FollowersCount,
+			&i.FollowingCount,
+			&i.IsAdmin,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Origin,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getFollowedUsers = `-- name: GetFollowedUsers :many
@@ -345,6 +386,43 @@ func (q *Queries) GetPostComments(ctx context.Context, id int32) ([]Comment, err
 			&i.UserID,
 			&i.Content,
 			&i.ParentID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getPostsByOrigin = `-- name: GetPostsByOrigin :many
+SELECT p.id, p.user_id, p.content, p.like_count, p.share_count, p.comment_count, p.created_at, p.updated_at FROM posts p JOIN users u ON p.user_id = u.id WHERE u.origin = $1
+`
+
+// queries that are needed for frontend
+func (q *Queries) GetPostsByOrigin(ctx context.Context, origin sql.NullString) ([]Post, error) {
+	rows, err := q.db.QueryContext(ctx, getPostsByOrigin, origin)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Post
+	for rows.Next() {
+		var i Post
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Content,
+			&i.LikeCount,
+			&i.ShareCount,
+			&i.CommentCount,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 		); err != nil {
