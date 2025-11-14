@@ -1,14 +1,11 @@
 package server
 
 import (
-	"encoding/json"
 	"io/fs"
-	"log"
 	"net/http"
 
 	"borg/internal/api"
 	"borg/internal/domain"
-	"borg/internal/models"
 	"borg/web"
 
 	"github.com/go-chi/chi/v5"
@@ -57,49 +54,20 @@ func (s *Server) handleAssets(w http.ResponseWriter, r *http.Request) {
 
 // DeleteApiUsersId implements api.ServerInterface.
 func (s *Server) DeleteApiUsersId(w http.ResponseWriter, r *http.Request, id int) {
-	panic("unimplemented")
+	delete(s.ds.UserRepository(), id).ServeHTTP(w, r)
 }
 
 // GetApiUsersId implements api.ServerInterface.
 func (s *Server) GetApiUsersId(w http.ResponseWriter, r *http.Request, id int) {
-	user, err := s.ds.UserRepository().GetByID(r.Context(), int32(id))
-	if err != nil {
-		log.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	res := models.UserFromDBType(&user)
-	_ = json.NewEncoder(w).Encode(res)
+	getByID(s.ds.UserRepository(), id).ServeHTTP(w, r)
 }
 
 // PostApiUsers implements api.ServerInterface.
 func (s *Server) PostApiUsers(w http.ResponseWriter, r *http.Request) {
-	var user api.PostApiUsersJSONRequestBody
-	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		log.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	if err := s.ds.UserRepository().Create(r.Context(), *models.AddUserToDBType(&user)); err != nil {
-		log.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
+	create(s.ds.UserRepository()).ServeHTTP(w, r)
 }
 
 // PutApiUsersId implements api.ServerInterface.
 func (s *Server) PutApiUsersId(w http.ResponseWriter, r *http.Request, id int) {
-	var user api.UpdateUser
-	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		log.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	if err := s.ds.UserRepository().Update(r.Context(), *models.UpdateUserToDBType(&user)); err != nil {
-		log.Println(err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
+	update(s.ds.UserRepository()).ServeHTTP(w, r)
 }

@@ -9,56 +9,56 @@ import (
 )
 
 type Comment struct {
-	ID        int32         `json:"id"`
-	PostID    int32         `json:"postId"`
-	UserID    int32         `json:"userId"`
-	Content   string        `json:"content"`
-	ParentID  sql.NullInt32 `json:"parentId"`
-	CreatedAt sql.NullTime  `json:"createdAt"`
-	UpdatedAt sql.NullTime  `json:"updatedAt"`
+	ID        int32
+	PostID    int32
+	UserID    int32
+	Content   string
+	ParentID  sql.NullInt32
+	CreatedAt sql.NullTime
+	UpdatedAt sql.NullTime
 }
 
 type Follower struct {
-	ID          int32        `json:"id"`
-	FollowerID  int32        `json:"followerId"`
-	FollowingID int32        `json:"followingId"`
-	CreatedAt   sql.NullTime `json:"createdAt"`
+	ID          int32
+	FollowerID  int32
+	FollowingID int32
+	CreatedAt   sql.NullTime
 }
 
 type Like struct {
-	ID        int32        `json:"id"`
-	PostID    int32        `json:"postId"`
-	UserID    int32        `json:"userId"`
-	CreatedAt sql.NullTime `json:"createdAt"`
+	ID        int32
+	PostID    int32
+	UserID    int32
+	CreatedAt sql.NullTime
 }
 
 type Post struct {
-	ID           int32         `json:"id"`
-	UserID       int32         `json:"userId"`
-	Content      string        `json:"content"`
-	LikeCount    sql.NullInt32 `json:"likeCount"`
-	ShareCount   sql.NullInt32 `json:"shareCount"`
-	CommentCount sql.NullInt32 `json:"commentCount"`
-	CreatedAt    sql.NullTime  `json:"createdAt"`
-	UpdatedAt    sql.NullTime  `json:"updatedAt"`
+	ID           int32
+	UserID       int32
+	Content      string
+	LikeCount    sql.NullInt32
+	ShareCount   sql.NullInt32
+	CommentCount sql.NullInt32
+	CreatedAt    sql.NullTime
+	UpdatedAt    sql.NullTime
 }
 
 type Share struct {
-	ID        int32        `json:"id"`
-	PostID    int32        `json:"postId"`
-	UserID    int32        `json:"userId"`
-	CreatedAt sql.NullTime `json:"createdAt"`
+	ID        int32
+	PostID    int32
+	UserID    int32
+	CreatedAt sql.NullTime
 }
 
 type User struct {
-	ID             int32          `json:"id"`
-	Username       string         `json:"username"`
-	PasswordHash   string         `json:"passwordHash"`
-	Bio            sql.NullString `json:"bio"`
-	FollowersCount sql.NullInt32  `json:"followersCount"`
-	FollowingCount sql.NullInt32  `json:"followingCount"`
-	IsAdmin        sql.NullBool   `json:"isAdmin"`
-	CreatedAt      sql.NullTime   `json:"createdAt"`
-	UpdatedAt      sql.NullTime   `json:"updatedAt"`
-	Origin         sql.NullString `json:"origin"`
+	ID             int32
+	Username       string
+	PasswordHash   string
+	Bio            sql.NullString
+	FollowersCount sql.NullInt32
+	FollowingCount sql.NullInt32
+	IsAdmin        sql.NullBool
+	CreatedAt      sql.NullTime
+	UpdatedAt      sql.NullTime
+	Origin         sql.NullString
 }
