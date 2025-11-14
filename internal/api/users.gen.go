@@ -9,6 +9,7 @@ import (
 
 // NewUser defines model for NewUser.
 type NewUser struct {
+	Password string `json:"password"`
 	Username string `json:"username"`
 }
 

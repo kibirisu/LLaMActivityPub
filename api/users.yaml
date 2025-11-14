@@ -61,41 +61,48 @@ paths:
 components:
   schemas:
     User:
-      allOf:
-        - $ref: "#/components/schemas/NewUser"
-        - $ref: "#/components/schemas/UpdateUser"
-        - type: object
-          required:
-            - id
-            - origin
-            - bio
-            - followersCount
-            - followingCount
-            - isAdmin
-            - createdAt
-            - updatedAt
-          properties:
-            id:
-              type: integer
-            origin:
-              type: string
-            followersCount:
-              type: integer
-            followingCount:
-              type: integer
-            createdAt:
-              type: string
-              format: date-time
-            updatedAt:
-              type: string
-              format: date-time
+      type: object
+      required:
+        - id
+        - username
+        - bio
+        - origin
+        - isAdmin
+        - followersCount
+        - followingCount
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        bio:
+          type: string
+        origin:
+          type: string
+        isAdmin:
+          type: boolean
+        followersCount:
+          type: integer
+        followingCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
 
     NewUser:
       type: object
       required:
         - username
+        - password
       properties:
         username:
+          type: string
+        password:
           type: string
 
     UpdateUser:

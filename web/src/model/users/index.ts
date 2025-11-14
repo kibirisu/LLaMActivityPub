@@ -9,4 +9,3 @@
 export * from './newUser';
 export * from './updateUser';
 export * from './user';
-export * from './userAllOf';
