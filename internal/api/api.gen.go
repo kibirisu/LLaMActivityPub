@@ -37,6 +37,9 @@ type ServerInterface interface {
 	// Update a user
 	// (PUT /api/users/{id})
 	PutApiUsersId(w http.ResponseWriter, r *http.Request, id int)
+	// Get posts of user with ID
+	// (GET /api/users/{id}/posts)
+	GetApiUsersIdPosts(w http.ResponseWriter, r *http.Request, id int)
 }
 
 // Unimplemented server implementation that returns http.StatusNotImplemented for each endpoint.
@@ -88,6 +91,12 @@ func (_ Unimplemented) GetApiUsersId(w http.ResponseWriter, r *http.Request, id 
 // Update a user
 // (PUT /api/users/{id})
 func (_ Unimplemented) PutApiUsersId(w http.ResponseWriter, r *http.Request, id int) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Get posts of user with ID
+// (GET /api/users/{id}/posts)
+func (_ Unimplemented) GetApiUsersIdPosts(w http.ResponseWriter, r *http.Request, id int) {
 	w.WriteHeader(http.StatusNotImplemented)
 }
 
@@ -278,6 +287,31 @@ func (siw *ServerInterfaceWrapper) PutApiUsersId(w http.ResponseWriter, r *http.
 	handler.ServeHTTP(w, r)
 }
 
+// GetApiUsersIdPosts operation middleware
+func (siw *ServerInterfaceWrapper) GetApiUsersIdPosts(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id int
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetApiUsersIdPosts(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
 type UnescapedCookieParamError struct {
 	ParamName string
 	Err       error
@@ -414,6 +448,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Put(options.BaseURL+"/api/users/{id}", wrapper.PutApiUsersId)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/users/{id}/posts", wrapper.GetApiUsersIdPosts)
 	})
 
 	return r

@@ -10,9 +10,14 @@ import {
   useQuery
 } from '@tanstack/react-query';
 import type {
+  DataTag,
+  DefinedInitialDataOptions,
+  DefinedUseQueryResult,
   MutationFunction,
+  QueryClient,
   QueryFunction,
   QueryKey,
+  UndefinedInitialDataOptions,
   UseMutationOptions,
   UseMutationResult,
   UseQueryOptions,
@@ -91,7 +96,7 @@ const {mutation: mutationOptions, axios: axiosOptions} = options ?
  */
 export const usePostApiUsers = <TError = AxiosError<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiUsers>>, TError,{data: NewUser}, TContext>, axios?: AxiosRequestConfig}
- ): UseMutationResult<
+ , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof postApiUsers>>,
         TError,
         {data: NewUser},
@@ -100,7 +105,7 @@ export const usePostApiUsers = <TError = AxiosError<unknown>,
 
       const mutationOptions = getPostApiUsersMutationOptions(options);
 
-      return useMutation(mutationOptions);
+      return useMutation(mutationOptions, queryClient);
     }
     /**
  * @summary Get a user by ID
@@ -125,7 +130,7 @@ export const getGetApiUsersIdQueryKey = (id?: number,) => {
     }
 
     
-export const getGetApiUsersIdQueryOptions = <TData = Awaited<ReturnType<typeof getApiUsersId>>, TError = AxiosError<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApiUsersId>>, TError, TData>, axios?: AxiosRequestConfig}
+export const getGetApiUsersIdQueryOptions = <TData = Awaited<ReturnType<typeof getApiUsersId>>, TError = AxiosError<unknown>>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiUsersId>>, TError, TData>>, axios?: AxiosRequestConfig}
 ) => {
 
 const {query: queryOptions, axios: axiosOptions} = options ?? {};
@@ -140,25 +145,49 @@ const {query: queryOptions, axios: axiosOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiUsersId>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiUsersId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetApiUsersIdQueryResult = NonNullable<Awaited<ReturnType<typeof getApiUsersId>>>
 export type GetApiUsersIdQueryError = AxiosError<unknown>
 
 
+export function useGetApiUsersId<TData = Awaited<ReturnType<typeof getApiUsersId>>, TError = AxiosError<unknown>>(
+ id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiUsersId>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiUsersId>>,
+          TError,
+          Awaited<ReturnType<typeof getApiUsersId>>
+        > , 'initialData'
+      >, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetApiUsersId<TData = Awaited<ReturnType<typeof getApiUsersId>>, TError = AxiosError<unknown>>(
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiUsersId>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiUsersId>>,
+          TError,
+          Awaited<ReturnType<typeof getApiUsersId>>
+        > , 'initialData'
+      >, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetApiUsersId<TData = Awaited<ReturnType<typeof getApiUsersId>>, TError = AxiosError<unknown>>(
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiUsersId>>, TError, TData>>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get a user by ID
  */
 
 export function useGetApiUsersId<TData = Awaited<ReturnType<typeof getApiUsersId>>, TError = AxiosError<unknown>>(
- id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApiUsersId>>, TError, TData>, axios?: AxiosRequestConfig}
-  
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiUsersId>>, TError, TData>>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetApiUsersIdQueryOptions(id,options)
 
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   query.queryKey = queryOptions.queryKey ;
 
@@ -217,7 +246,7 @@ const {mutation: mutationOptions, axios: axiosOptions} = options ?
  */
 export const useDeleteApiUsersId = <TError = AxiosError<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiUsersId>>, TError,{id: number}, TContext>, axios?: AxiosRequestConfig}
- ): UseMutationResult<
+ , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof deleteApiUsersId>>,
         TError,
         {id: number},
@@ -226,7 +255,7 @@ export const useDeleteApiUsersId = <TError = AxiosError<unknown>,
 
       const mutationOptions = getDeleteApiUsersIdMutationOptions(options);
 
-      return useMutation(mutationOptions);
+      return useMutation(mutationOptions, queryClient);
     }
     /**
  * @summary Update a user
@@ -279,7 +308,7 @@ const {mutation: mutationOptions, axios: axiosOptions} = options ?
  */
 export const usePutApiUsersId = <TError = AxiosError<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putApiUsersId>>, TError,{id: number;data: UpdateUser}, TContext>, axios?: AxiosRequestConfig}
- ): UseMutationResult<
+ , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof putApiUsersId>>,
         TError,
         {id: number;data: UpdateUser},
@@ -288,9 +317,99 @@ export const usePutApiUsersId = <TError = AxiosError<unknown>,
 
       const mutationOptions = getPutApiUsersIdMutationOptions(options);
 
-      return useMutation(mutationOptions);
+      return useMutation(mutationOptions, queryClient);
     }
     /**
+ * @summary Get posts of user with ID
+ */
+export const getApiUsersIdPosts = (
+    id: number, options?: AxiosRequestConfig
+ ): Promise<AxiosResponse<Post[]>> => {
+    
+    
+    return axios.default.get(
+      `/api/users/${id}/posts`,options
+    );
+  }
+
+
+
+
+export const getGetApiUsersIdPostsQueryKey = (id?: number,) => {
+    return [
+    `/api/users/${id}/posts`
+    ] as const;
+    }
+
+    
+export const getGetApiUsersIdPostsQueryOptions = <TData = Awaited<ReturnType<typeof getApiUsersIdPosts>>, TError = AxiosError<unknown>>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiUsersIdPosts>>, TError, TData>>, axios?: AxiosRequestConfig}
+) => {
+
+const {query: queryOptions, axios: axiosOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetApiUsersIdPostsQueryKey(id);
+
+  
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getApiUsersIdPosts>>> = ({ signal }) => getApiUsersIdPosts(id, { signal, ...axiosOptions });
+
+      
+
+      
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiUsersIdPosts>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type GetApiUsersIdPostsQueryResult = NonNullable<Awaited<ReturnType<typeof getApiUsersIdPosts>>>
+export type GetApiUsersIdPostsQueryError = AxiosError<unknown>
+
+
+export function useGetApiUsersIdPosts<TData = Awaited<ReturnType<typeof getApiUsersIdPosts>>, TError = AxiosError<unknown>>(
+ id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiUsersIdPosts>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiUsersIdPosts>>,
+          TError,
+          Awaited<ReturnType<typeof getApiUsersIdPosts>>
+        > , 'initialData'
+      >, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetApiUsersIdPosts<TData = Awaited<ReturnType<typeof getApiUsersIdPosts>>, TError = AxiosError<unknown>>(
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiUsersIdPosts>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiUsersIdPosts>>,
+          TError,
+          Awaited<ReturnType<typeof getApiUsersIdPosts>>
+        > , 'initialData'
+      >, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetApiUsersIdPosts<TData = Awaited<ReturnType<typeof getApiUsersIdPosts>>, TError = AxiosError<unknown>>(
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiUsersIdPosts>>, TError, TData>>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get posts of user with ID
+ */
+
+export function useGetApiUsersIdPosts<TData = Awaited<ReturnType<typeof getApiUsersIdPosts>>, TError = AxiosError<unknown>>(
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiUsersIdPosts>>, TError, TData>>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getGetApiUsersIdPostsQueryOptions(id,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  query.queryKey = queryOptions.queryKey ;
+
+  return query;
+}
+
+
+
+
+/**
  * @summary Create a post
  */
 export const postApiPosts = (
@@ -340,7 +459,7 @@ const {mutation: mutationOptions, axios: axiosOptions} = options ?
  */
 export const usePostApiPosts = <TError = AxiosError<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postApiPosts>>, TError,{data: NewPost}, TContext>, axios?: AxiosRequestConfig}
- ): UseMutationResult<
+ , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof postApiPosts>>,
         TError,
         {data: NewPost},
@@ -349,7 +468,7 @@ export const usePostApiPosts = <TError = AxiosError<unknown>,
 
       const mutationOptions = getPostApiPostsMutationOptions(options);
 
-      return useMutation(mutationOptions);
+      return useMutation(mutationOptions, queryClient);
     }
     /**
  * @summary Get a post by ID
@@ -374,7 +493,7 @@ export const getGetApiPostsIdQueryKey = (id?: number,) => {
     }
 
     
-export const getGetApiPostsIdQueryOptions = <TData = Awaited<ReturnType<typeof getApiPostsId>>, TError = AxiosError<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApiPostsId>>, TError, TData>, axios?: AxiosRequestConfig}
+export const getGetApiPostsIdQueryOptions = <TData = Awaited<ReturnType<typeof getApiPostsId>>, TError = AxiosError<unknown>>(id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiPostsId>>, TError, TData>>, axios?: AxiosRequestConfig}
 ) => {
 
 const {query: queryOptions, axios: axiosOptions} = options ?? {};
@@ -389,25 +508,49 @@ const {query: queryOptions, axios: axiosOptions} = options ?? {};
 
       
 
-   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiPostsId>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getApiPostsId>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
 }
 
 export type GetApiPostsIdQueryResult = NonNullable<Awaited<ReturnType<typeof getApiPostsId>>>
 export type GetApiPostsIdQueryError = AxiosError<unknown>
 
 
+export function useGetApiPostsId<TData = Awaited<ReturnType<typeof getApiPostsId>>, TError = AxiosError<unknown>>(
+ id: number, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiPostsId>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiPostsId>>,
+          TError,
+          Awaited<ReturnType<typeof getApiPostsId>>
+        > , 'initialData'
+      >, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetApiPostsId<TData = Awaited<ReturnType<typeof getApiPostsId>>, TError = AxiosError<unknown>>(
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiPostsId>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof getApiPostsId>>,
+          TError,
+          Awaited<ReturnType<typeof getApiPostsId>>
+        > , 'initialData'
+      >, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useGetApiPostsId<TData = Awaited<ReturnType<typeof getApiPostsId>>, TError = AxiosError<unknown>>(
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiPostsId>>, TError, TData>>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
 /**
  * @summary Get a post by ID
  */
 
 export function useGetApiPostsId<TData = Awaited<ReturnType<typeof getApiPostsId>>, TError = AxiosError<unknown>>(
- id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getApiPostsId>>, TError, TData>, axios?: AxiosRequestConfig}
-  
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+ id: number, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof getApiPostsId>>, TError, TData>>, axios?: AxiosRequestConfig}
+ , queryClient?: QueryClient 
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
 
   const queryOptions = getGetApiPostsIdQueryOptions(id,options)
 
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
 
   query.queryKey = queryOptions.queryKey ;
 
@@ -466,7 +609,7 @@ const {mutation: mutationOptions, axios: axiosOptions} = options ?
  */
 export const useDeleteApiPostsId = <TError = AxiosError<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteApiPostsId>>, TError,{id: number}, TContext>, axios?: AxiosRequestConfig}
- ): UseMutationResult<
+ , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof deleteApiPostsId>>,
         TError,
         {id: number},
@@ -475,7 +618,7 @@ export const useDeleteApiPostsId = <TError = AxiosError<unknown>,
 
       const mutationOptions = getDeleteApiPostsIdMutationOptions(options);
 
-      return useMutation(mutationOptions);
+      return useMutation(mutationOptions, queryClient);
     }
     /**
  * @summary Update a post
@@ -528,7 +671,7 @@ const {mutation: mutationOptions, axios: axiosOptions} = options ?
  */
 export const usePutApiPostsId = <TError = AxiosError<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof putApiPostsId>>, TError,{id: number;data: UpdatePost}, TContext>, axios?: AxiosRequestConfig}
- ): UseMutationResult<
+ , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof putApiPostsId>>,
         TError,
         {id: number;data: UpdatePost},
@@ -537,6 +680,6 @@ export const usePutApiPostsId = <TError = AxiosError<unknown>,
 
       const mutationOptions = getPutApiPostsIdMutationOptions(options);
 
-      return useMutation(mutationOptions);
+      return useMutation(mutationOptions, queryClient);
     }
     
