@@ -5,8 +5,9 @@ INSERT INTO users (
   bio,
   followers_count,
   following_count,
-  is_admin
-) VALUES ($1, $2, $3, $4, $5, $6);
+  is_admin,
+  origin
+) VALUES ($1, $2, $3, $4, $5, $6, $7);
 
 -- name: GetUser :one
 SELECT * FROM users WHERE id = $1;
@@ -85,3 +86,11 @@ SELECT * FROM shares WHERE user_id = $1;
 
 -- name: DeleteShare :exec
 DELETE FROM shares WHERE id = $1;
+
+
+-- queries that are needed for frontend
+-- name: GetPostsByOrigin :many
+SELECT p.* FROM posts p JOIN users u ON p.user_id = u.id WHERE u.origin = $1;
+
+-- name: GetAllUsers :many
+SELECT * FROM users;
