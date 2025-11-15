@@ -1,20 +1,18 @@
-import { UserX } from 'lucide-react';
-import { useState } from 'react';
-import { useParams } from 'react-router';
-import { type Post, samplePosts, sampleUsers, type User } from '../feed/feedData';
-import PostItem from '../feed/PostItem';
-import TopAppBar from '../TopAppBar';
+import { UserX } from "lucide-react";
+import { useState } from "react";
+import { useLoaderData } from "react-router";
+import { type Post, samplePosts } from "../feed/feedData";
+import PostItem from "../feed/PostItem";
+import TopAppBar from "../TopAppBar";
 
 export function getUserInitials(username: string): string {
-  if (!username) return '';
-  return username.replace(/^@/, '').slice(0, 2).toUpperCase();
+  if (!username) return "";
+  return username.replace(/^@/, "").slice(0, 2).toUpperCase();
 }
 export default function UserProfile({ onTopBarSearch }: any) {
-  const params = useParams();
-  const handleParam = params.handle ? `@${params.handle}` : undefined;
   // TODO: backend req
   const [isFollowed, setIsFollowed] = useState(false);
-  const user = sampleUsers.find((u: User) => u.username === handleParam);
+  const user = useLoaderData();
 
   if (user === undefined) {
     return (
@@ -23,10 +21,12 @@ export default function UserProfile({ onTopBarSearch }: any) {
           <div className="bg-red-100 text-red-600 p-4 rounded-full">
             <UserX className="w-10 h-10" />
           </div>
-          <h1 className="text-3xl font-bold">Sorry, that user does not exist</h1>
+          <h1 className="text-3xl font-bold">
+            Sorry, that user does not exist
+          </h1>
           <p className="text-gray-500">
-            The user you’re looking for might have changed their username, deleted their account, or never existed at
-            all.
+            The user you’re looking for might have changed their username,
+            deleted their account, or never existed at all.
           </p>
           <a
             href="/"
@@ -60,13 +60,15 @@ export default function UserProfile({ onTopBarSearch }: any) {
             </div>
             <div className="text-center">
               <div className="text-gray-600">{user.username}</div>
-              <div className="text-2xl font-semibold text-gray-700">{user.bio}</div>
+              <div className="text-2xl font-semibold text-gray-700">
+                {user.bio}
+              </div>
               <button
                 type="button"
                 onClick={() => setIsFollowed(!isFollowed)}
-                className={`btn ${isFollowed ? 'btn-outline btn-secondary' : 'btn-primary'}`}
+                className={`btn ${isFollowed ? "btn-outline btn-secondary" : "btn-primary"}`}
               >
-                {isFollowed ? 'Unfollow' : 'Follow'}
+                {isFollowed ? "Unfollow" : "Follow"}
               </button>
             </div>
           </div>
