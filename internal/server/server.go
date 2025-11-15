@@ -54,7 +54,7 @@ func (s *Server) handleAssets(w http.ResponseWriter, r *http.Request) {
 
 // DeleteApiUsersId implements api.ServerInterface.
 func (s *Server) DeleteApiUsersId(w http.ResponseWriter, r *http.Request, id int) {
-	delete(s.ds.UserRepository(), id).ServeHTTP(w, r)
+	deleteByID(s.ds.UserRepository(), id).ServeHTTP(w, r)
 }
 
 // GetApiUsersId implements api.ServerInterface.
@@ -70,4 +70,24 @@ func (s *Server) PostApiUsers(w http.ResponseWriter, r *http.Request) {
 // PutApiUsersId implements api.ServerInterface.
 func (s *Server) PutApiUsersId(w http.ResponseWriter, r *http.Request, id int) {
 	update(s.ds.UserRepository()).ServeHTTP(w, r)
+}
+
+// DeleteApiPostsId implements api.ServerInterface.
+func (s *Server) DeleteApiPostsId(w http.ResponseWriter, r *http.Request, id int) {
+	deleteByID(s.ds.PostRepository(), id).ServeHTTP(w, r)
+}
+
+// GetApiPostsId implements api.ServerInterface.
+func (s *Server) GetApiPostsId(w http.ResponseWriter, r *http.Request, id int) {
+	getByID(s.ds.PostRepository(), id).ServeHTTP(w, r)
+}
+
+// PostApiPosts implements api.ServerInterface.
+func (s *Server) PostApiPosts(w http.ResponseWriter, r *http.Request) {
+	create(s.ds.PostRepository()).ServeHTTP(w, r)
+}
+
+// PutApiPostsId implements api.ServerInterface.
+func (s *Server) PutApiPostsId(w http.ResponseWriter, r *http.Request, id int) {
+	update(s.ds.PostRepository()).ServeHTTP(w, r)
 }

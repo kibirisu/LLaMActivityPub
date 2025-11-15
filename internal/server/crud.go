@@ -72,7 +72,7 @@ func getByPostID[R domain.PostScopedRepository[T, Create, Update], T, Create, Up
 	}
 }
 
-func delete[R domain.Repository[T, Create, Update], T, Create, Update any](
+func deleteByID[R domain.Repository[T, Create, Update], T, Create, Update any](
 	repo R,
 	id int,
 ) http.HandlerFunc {

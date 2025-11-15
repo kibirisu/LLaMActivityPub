@@ -50,6 +50,8 @@ type dataStore struct {
 	opts     json.Options
 }
 
+var _ DataStore = (*dataStore)(nil)
+
 func NewDataStore(ctx context.Context, url string) (DataStore, error) {
 	q, err := db.GetDB(ctx, url)
 	if err != nil {

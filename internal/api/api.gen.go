@@ -13,6 +13,18 @@ import (
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// Create a post
+	// (POST /api/posts)
+	PostApiPosts(w http.ResponseWriter, r *http.Request)
+	// Delete a post by ID
+	// (DELETE /api/posts/{id})
+	DeleteApiPostsId(w http.ResponseWriter, r *http.Request, id int)
+	// Get a post by ID
+	// (GET /api/posts/{id})
+	GetApiPostsId(w http.ResponseWriter, r *http.Request, id int)
+	// Update a post
+	// (PUT /api/posts/{id})
+	PutApiPostsId(w http.ResponseWriter, r *http.Request, id int)
 	// Create a user
 	// (POST /api/users)
 	PostApiUsers(w http.ResponseWriter, r *http.Request)
@@ -30,6 +42,30 @@ type ServerInterface interface {
 // Unimplemented server implementation that returns http.StatusNotImplemented for each endpoint.
 
 type Unimplemented struct{}
+
+// Create a post
+// (POST /api/posts)
+func (_ Unimplemented) PostApiPosts(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Delete a post by ID
+// (DELETE /api/posts/{id})
+func (_ Unimplemented) DeleteApiPostsId(w http.ResponseWriter, r *http.Request, id int) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Get a post by ID
+// (GET /api/posts/{id})
+func (_ Unimplemented) GetApiPostsId(w http.ResponseWriter, r *http.Request, id int) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
+
+// Update a post
+// (PUT /api/posts/{id})
+func (_ Unimplemented) PutApiPostsId(w http.ResponseWriter, r *http.Request, id int) {
+	w.WriteHeader(http.StatusNotImplemented)
+}
 
 // Create a user
 // (POST /api/users)
@@ -63,6 +99,95 @@ type ServerInterfaceWrapper struct {
 }
 
 type MiddlewareFunc func(http.Handler) http.Handler
+
+// PostApiPosts operation middleware
+func (siw *ServerInterfaceWrapper) PostApiPosts(w http.ResponseWriter, r *http.Request) {
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostApiPosts(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// DeleteApiPostsId operation middleware
+func (siw *ServerInterfaceWrapper) DeleteApiPostsId(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id int
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.DeleteApiPostsId(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// GetApiPostsId operation middleware
+func (siw *ServerInterfaceWrapper) GetApiPostsId(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id int
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetApiPostsId(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
+
+// PutApiPostsId operation middleware
+func (siw *ServerInterfaceWrapper) PutApiPostsId(w http.ResponseWriter, r *http.Request) {
+
+	var err error
+
+	// ------------- Path parameter "id" -------------
+	var id int
+
+	err = runtime.BindStyledParameterWithOptions("simple", "id", chi.URLParam(r, "id"), &id, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandlerFunc(w, r, &InvalidParamFormatError{ParamName: "id", Err: err})
+		return
+	}
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PutApiPostsId(w, r, id)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r)
+}
 
 // PostApiUsers operation middleware
 func (siw *ServerInterfaceWrapper) PostApiUsers(w http.ResponseWriter, r *http.Request) {
@@ -266,6 +391,18 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		ErrorHandlerFunc:   options.ErrorHandlerFunc,
 	}
 
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/api/posts", wrapper.PostApiPosts)
+	})
+	r.Group(func(r chi.Router) {
+		r.Delete(options.BaseURL+"/api/posts/{id}", wrapper.DeleteApiPostsId)
+	})
+	r.Group(func(r chi.Router) {
+		r.Get(options.BaseURL+"/api/posts/{id}", wrapper.GetApiPostsId)
+	})
+	r.Group(func(r chi.Router) {
+		r.Put(options.BaseURL+"/api/posts/{id}", wrapper.PutApiPostsId)
+	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/api/users", wrapper.PostApiUsers)
 	})

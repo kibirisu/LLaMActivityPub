@@ -13,3 +13,7 @@ paths:
     $ref: "users.yaml#/paths/~1api~1users"
   /api/users/{id}:
     $ref: "users.yaml#/paths/~1api~1users~1{id}"
+  /api/posts:
+    $ref: "posts.yaml#/paths/~1api~1posts"
+  /api/posts/{id}:
+    $ref: "posts.yaml#/paths/~1api~1posts~1{id}"
