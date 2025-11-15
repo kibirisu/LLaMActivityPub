@@ -92,6 +92,7 @@ type AddUserParams struct {
 	FollowersCount sql.NullInt32
 	FollowingCount sql.NullInt32
 	IsAdmin        sql.NullBool
+	Origin         sql.NullString
 }
 
 func (q *Queries) AddUser(ctx context.Context, arg AddUserParams) error {

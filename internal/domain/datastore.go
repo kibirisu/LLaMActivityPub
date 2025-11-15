@@ -2,7 +2,6 @@ package domain
 
 import (
 	"context"
-	"encoding/json"
 
 	"borg/internal/db"
 )
@@ -13,7 +12,6 @@ type DataStore interface {
 	CommentRepository() CommentRepository
 	LikeRepository() LikeRepository
 	ShareRepository() ShareRepository
-	Opts() json.Options
 }
 
 type Repository[T, C, U any] interface {
@@ -47,7 +45,6 @@ type dataStore struct {
 	comments CommentRepository
 	likes    LikeRepository
 	shares   ShareRepository
-	opts     json.Options
 }
 
 var _ DataStore = (*dataStore)(nil)
@@ -57,7 +54,7 @@ func NewDataStore(ctx context.Context, url string) (DataStore, error) {
 	if err != nil {
 		return nil, err
 	}
-	ds := &dataStore{opts: getOptions()}
+	ds := &dataStore{}
 	ds.users = newUserRepository(q)
 	ds.posts = newPostRepository(q)
 	ds.comments = newCommentRepository(q)
@@ -84,8 +81,4 @@ func (ds *dataStore) LikeRepository() LikeRepository {
 
 func (ds *dataStore) ShareRepository() ShareRepository {
 	return ds.shares
-}
-
-func (ds *dataStore) Opts() json.Options {
-	return ds.opts
 }
